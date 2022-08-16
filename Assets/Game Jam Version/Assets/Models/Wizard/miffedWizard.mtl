@@ -1,0 +1,23 @@
+# Blender MTL File: 'miffedWizard.blend'
+# Material Count: 2
+
+newmtl Eyes
+Ns 900.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.994809 1.000000 0.180970
+Ks 0.000000 0.000000 0.000000
+Ke 0.671939 1.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+
+newmtl Material
+Ns 900.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd C:\\Users\\kurti\\Desktop\\UnityStuff\\Models\\Wizard\\tex_wizard.png

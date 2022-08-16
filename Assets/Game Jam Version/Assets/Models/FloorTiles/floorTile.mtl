@@ -1,0 +1,13 @@
+# Blender MTL File: 'floorTile.blend'
+# Material Count: 1
+
+newmtl Material
+Ns 323.999994
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 0.957641 0.989312
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:\\Users\\kurti\\Desktop\\UnityStuff\\2021SummerJam\\Assets\\Models\\tex_Wood.png
