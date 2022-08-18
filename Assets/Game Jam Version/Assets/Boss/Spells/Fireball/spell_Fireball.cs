@@ -252,7 +252,6 @@ public class spell_Fireball : MonoBehaviour
     // Audio ------------------------------------------
 
     bool IsAudioValid(SoundFile soundFile) {
-        Debug.Log(audioSource);
         if (audioSource == null || soundFile == null) {
             return false;
         }

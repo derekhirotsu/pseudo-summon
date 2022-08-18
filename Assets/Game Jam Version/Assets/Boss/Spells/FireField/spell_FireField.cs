@@ -8,8 +8,15 @@ public class spell_FireField : MonoBehaviour
     [SerializeField] float spellDuration;
     [SerializeField] float spellArmTime;
     [SerializeField] GameObject inidicator;
-
     GameObject fireField;
+
+    [SerializeField] private SoundFile chargeSfx;
+    [SerializeField] private SoundFile detonateSfx;
+    private AudioSource audioSource;
+
+    void Awake() {
+        audioSource = this.GetComponent<AudioSource>();
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -22,7 +29,7 @@ public class spell_FireField : MonoBehaviour
         this.fireField.transform.SetParent(this.gameObject.transform);
         this.fireField.GetComponent<FireFieldProjectile>().SetParticleEmission(false);
 
-        AudioManager.instance.PlayOneShotSoundFile("boss fire field charge");
+        PlaySoundEffect(chargeSfx);
 
         yield return new WaitForSeconds(this.spellArmTime);
         
@@ -36,9 +43,35 @@ public class spell_FireField : MonoBehaviour
     void Detonate() {
         Renderer r = this.fireField.GetComponent<Renderer>();
         Destroy(this.inidicator);
-        AudioManager.instance.PlayOneShotSoundFile("boss fire field fire");
+        PlaySoundEffect(detonateSfx);
         CapsuleCollider collider = this.fireField.GetComponent<CapsuleCollider>();
         this.fireField.GetComponent<FireFieldProjectile>().SetParticleEmission(true);
         collider.enabled = true;
+    }
+
+    // Audio ------------------------------------------
+
+    bool IsAudioValid(SoundFile soundFile) {
+        if (audioSource == null || soundFile == null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    void SetAudioPitch(SoundFile soundFile) {
+        audioSource.pitch = 1f;
+        if (soundFile.randomizePitch) {
+            audioSource.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
+        }
+    }
+
+    void PlaySoundEffect(SoundFile soundFile) {
+        if (!IsAudioValid(soundFile)) {
+            return;
+        }
+
+        SetAudioPitch(soundFile);
+        audioSource.PlayOneShot(soundFile.audioClip, soundFile.volumeScale);
     }
 }
