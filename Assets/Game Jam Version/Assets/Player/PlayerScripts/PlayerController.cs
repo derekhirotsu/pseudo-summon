@@ -110,6 +110,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private SoundFile playerSecondaryReadySfx;
     [SerializeField] private SoundFile playerSecondaryChargeSfx;
     [SerializeField] private SoundFile playerSecondaryFireSfx;
+    // TODO: This could be moved to boss script once boss is decoupled from
+    // player in future refactoring. See note on CheckBossHit method below.
+    [SerializeField] private SoundFile bossHitSfx;
     private AudioSource playerAudio;
 
     void Start() {
@@ -148,10 +151,11 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // TODO: This could be refactored to decouple player from boss.
     void CheckBossHit() {
         // Boss taking damage check
         if (bossHealth.TookDamage(consumeTrigger:true)) {
-            AudioManager.instance.PlayOneShotSoundFile("boss hit");
+            PlaySoundEffect(bossHitSfx);
             AddToCharge();
 
             // Small hitstop
@@ -253,7 +257,7 @@ public class PlayerController : MonoBehaviour
             if (busterInProgress) {
                 busterChargeVFX.SetActive(false);
                 busterInProgress = false;
-                AudioManager.instance.StopSoundFile();
+                playerAudio.Stop();
             }
 
             if (shootCoroutine != null) {
@@ -537,7 +541,7 @@ public class PlayerController : MonoBehaviour
         Debug.Log("Ouchie :(");
         hitBox.enabled = false;
 
-        AudioManager.instance.StopSoundFile();
+        playerAudio.Stop();
         UI.DisplayDeathUI(won:false);
 
         this.enabled = false;

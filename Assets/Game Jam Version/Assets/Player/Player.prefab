@@ -214,6 +214,7 @@ MonoBehaviour:
   playerSecondaryReadySfx: {fileID: 11400000, guid: 7b442bc071763df4ba4fc68ff949bf37, type: 2}
   playerSecondaryChargeSfx: {fileID: 11400000, guid: d4fe3e811887f74468ed4378268a32b2, type: 2}
   playerSecondaryFireSfx: {fileID: 11400000, guid: f24231c600cb6ce498980b1d900cf679, type: 2}
+  bossHitSfx: {fileID: 11400000, guid: b4d59fd8b5e1e974184e186f2df48938, type: 2}
 --- !u!82 &951325374121236488
 AudioSource:
   m_ObjectHideFlags: 0
