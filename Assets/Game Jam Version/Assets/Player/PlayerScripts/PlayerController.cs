@@ -51,7 +51,7 @@ public class PlayerController : MonoBehaviour
         if (currentHitCharge < hitsToCharge && !BusterOnCooldown) {
             currentHitCharge++;
             if (currentHitCharge == hitsToCharge) {
-                AudioManager.instance.PlayOneShotSoundFile("player charge beam ready");
+                PlaySoundEffect(playerSecondaryReadySfx);
             }
         }
     }
@@ -103,12 +103,25 @@ public class PlayerController : MonoBehaviour
 
     bool isPaused = false;
 
+    [Header("Player Audio")]
+    [SerializeField] private SoundFile playerHitSfx;
+    [SerializeField] private SoundFile playerShootSfx;
+    [SerializeField] private SoundFile playerDodgeSfx;
+    [SerializeField] private SoundFile playerSecondaryReadySfx;
+    [SerializeField] private SoundFile playerSecondaryChargeSfx;
+    [SerializeField] private SoundFile playerSecondaryFireSfx;
+    // TODO: This could be moved to boss script once boss is decoupled from
+    // player in future refactoring. See note on CheckBossHit method below.
+    [SerializeField] private SoundFile bossHitSfx;
+    private AudioSource playerAudio;
+
     void Start() {
         isPaused = false;
         cam = Camera.main;
         health = this.GetComponent<HealthTracker>();
         hitBox = this.GetComponent<CapsuleCollider>();
         animator = this.GetComponent<Animator>();
+        playerAudio = this.GetComponent<AudioSource>();
 
         if (platform == null) {
             Debug.LogWarning("No Platform was given to the player!");
@@ -118,7 +131,7 @@ public class PlayerController : MonoBehaviour
     void CheckPlayerHit() {
         // Me taking damage check
         if (health.TookDamage(consumeTrigger:true)) {
-            AudioManager.instance.PlayOneShotSoundFile("player hit");
+            PlaySoundEffect(playerHitSfx);
 
             if (invincibilityCoroutine != null ) {
                 StopCoroutine(invincibilityCoroutine);
@@ -138,10 +151,11 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // TODO: This could be refactored to decouple player from boss.
     void CheckBossHit() {
         // Boss taking damage check
         if (bossHealth.TookDamage(consumeTrigger:true)) {
-            AudioManager.instance.PlayOneShotSoundFile("boss hit");
+            PlaySoundEffect(bossHitSfx);
             AddToCharge();
 
             // Small hitstop
@@ -243,7 +257,7 @@ public class PlayerController : MonoBehaviour
             if (busterInProgress) {
                 busterChargeVFX.SetActive(false);
                 busterInProgress = false;
-                AudioManager.instance.StopSoundFile();
+                playerAudio.Stop();
             }
 
             if (shootCoroutine != null) {
@@ -331,7 +345,7 @@ public class PlayerController : MonoBehaviour
                 animator.SetBool("FireSide", fireSide);
                 animator.Play("Fire");
 
-                AudioManager.instance.PlayOneShotSoundFile("player fire");
+                PlaySoundEffect(playerShootSfx);
                 fireCooldown = firingInterval;
             }
 
@@ -350,9 +364,9 @@ public class PlayerController : MonoBehaviour
         busterChargeVFX.SetActive(true);
         speedMod = 0.5f;
 
-            // Animate
+        // Animate
         animator.Play("BusterCharge");
-        AudioManager.instance.PlaySoundFile("player charge beam charge 2");
+        PlaySoundEffect(playerSecondaryChargeSfx);
         yield return new WaitForSeconds(2.5f);
 
         // 2. Create buster projectile
@@ -363,8 +377,8 @@ public class PlayerController : MonoBehaviour
 
             // Animate
         animator.Play("BusterFire");
-        AudioManager.instance.PlayOneShotSoundFile("player charge beam fire");
-            // This is necessary to allow the collider a chance to register the hit
+        PlaySoundEffect(playerSecondaryFireSfx);
+        // This is necessary to allow the collider a chance to register the hit
         yield return new WaitForSecondsRealtime(0.05f);
 
         busterEffect.transform.parent = null;
@@ -414,7 +428,7 @@ public class PlayerController : MonoBehaviour
     }
 
     protected IEnumerator Roll() {
-        AudioManager.instance.PlayOneShotSoundFile("player dodge");
+        PlaySoundEffect(playerDodgeSfx);
         Vector3 rollVector;
         if (rawInputVector.magnitude > Mathf.Epsilon) {
             rollVector = rawInputVector;
@@ -527,11 +541,36 @@ public class PlayerController : MonoBehaviour
         Debug.Log("Ouchie :(");
         hitBox.enabled = false;
 
-        AudioManager.instance.StopSoundFile();
+        playerAudio.Stop();
         UI.DisplayDeathUI(won:false);
 
         this.enabled = false;
         this.gameObject.SetActive(false);
     }
- 
+
+    // Player Audio ------------------------------------------
+
+    bool IsAudioValid(SoundFile soundFile) {
+        if (playerAudio == null || soundFile == null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    void SetPlayerAudioPitch(SoundFile soundFile) {
+        playerAudio.pitch = 1f;
+        if (soundFile.randomizePitch) {
+            playerAudio.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
+        }
+    }
+
+    void PlaySoundEffect(SoundFile soundFile) {
+        if (!IsAudioValid(soundFile)) {
+            return;
+        }
+
+        SetPlayerAudioPitch(soundFile);
+        playerAudio.PlayOneShot(soundFile.audioClip, soundFile.volumeScale);
+    }
 }
