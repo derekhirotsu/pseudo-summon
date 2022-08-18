@@ -106,6 +106,7 @@ public class PlayerController : MonoBehaviour
     [Header("Player Audio")]
     [SerializeField] private SoundFile playerHitSfx;
     [SerializeField] private SoundFile playerShootSfx;
+    [SerializeField] private SoundFile playerDodgeSfx;
     private AudioSource playerAudio;
 
     void Start() {
@@ -124,7 +125,7 @@ public class PlayerController : MonoBehaviour
     void CheckPlayerHit() {
         // Me taking damage check
         if (health.TookDamage(consumeTrigger:true)) {
-            PlayHitSoundEffect();
+            PlaySoundEffect(playerHitSfx);
 
             if (invincibilityCoroutine != null ) {
                 StopCoroutine(invincibilityCoroutine);
@@ -337,7 +338,7 @@ public class PlayerController : MonoBehaviour
                 animator.SetBool("FireSide", fireSide);
                 animator.Play("Fire");
 
-                PlayShootSoundEffect();
+                PlaySoundEffect(playerShootSfx);
                 fireCooldown = firingInterval;
             }
 
@@ -420,7 +421,7 @@ public class PlayerController : MonoBehaviour
     }
 
     protected IEnumerator Roll() {
-        AudioManager.instance.PlayOneShotSoundFile("player dodge");
+        PlaySoundEffect(playerDodgeSfx);
         Vector3 rollVector;
         if (rawInputVector.magnitude > Mathf.Epsilon) {
             rollVector = rawInputVector;
@@ -542,29 +543,27 @@ public class PlayerController : MonoBehaviour
 
     // Player Audio ------------------------------------------
 
-    void PlayHitSoundEffect() {
-        if (playerAudio == null || playerHitSfx == null) {
-            return;
+    bool IsAudioValid(SoundFile soundFile) {
+        if (playerAudio == null || soundFile == null) {
+            return false;
         }
 
-        playerAudio.pitch = 1f;
-        if (playerHitSfx.randomizePitch) {
-            playerAudio.pitch = Random.Range(playerHitSfx.minPitch, playerHitSfx.maxPitch);
-        }
-
-        playerAudio.PlayOneShot(playerHitSfx.audioClip, playerHitSfx.volumeScale);
+        return true;
     }
 
-    void PlayShootSoundEffect() {
-        if (playerAudio == null || playerShootSfx == null) {
+    void SetPlayerAudioPitch(SoundFile soundFile) {
+        playerAudio.pitch = 1f;
+        if (soundFile.randomizePitch) {
+            playerAudio.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
+        }
+    }
+
+    void PlaySoundEffect(SoundFile soundFile) {
+        if (!IsAudioValid(soundFile)) {
             return;
         }
 
-        playerAudio.pitch = 1f;
-        if (playerShootSfx.randomizePitch) {
-            playerAudio.pitch = Random.Range(playerShootSfx.minPitch, playerShootSfx.maxPitch);
-        }
-
-        playerAudio.PlayOneShot(playerShootSfx.audioClip, playerShootSfx.volumeScale);   
+        SetPlayerAudioPitch(soundFile);
+        playerAudio.PlayOneShot(soundFile.audioClip, soundFile.volumeScale);
     }
 }
