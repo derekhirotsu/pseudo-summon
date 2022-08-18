@@ -103,12 +103,17 @@ public class PlayerController : MonoBehaviour
 
     bool isPaused = false;
 
+    [Header("Player Audio")]
+    [SerializeField] private SoundFile playerHitSfx;
+    private AudioSource playerAudio;
+
     void Start() {
         isPaused = false;
         cam = Camera.main;
         health = this.GetComponent<HealthTracker>();
         hitBox = this.GetComponent<CapsuleCollider>();
         animator = this.GetComponent<Animator>();
+        playerAudio = this.GetComponent<AudioSource>();
 
         if (platform == null) {
             Debug.LogWarning("No Platform was given to the player!");
@@ -118,7 +123,7 @@ public class PlayerController : MonoBehaviour
     void CheckPlayerHit() {
         // Me taking damage check
         if (health.TookDamage(consumeTrigger:true)) {
-            AudioManager.instance.PlayOneShotSoundFile("player hit");
+            PlayHitSoundEffect();
 
             if (invincibilityCoroutine != null ) {
                 StopCoroutine(invincibilityCoroutine);
@@ -533,5 +538,19 @@ public class PlayerController : MonoBehaviour
         this.enabled = false;
         this.gameObject.SetActive(false);
     }
- 
+
+    // Player Audio ------------------------------------------
+
+    void PlayHitSoundEffect() {
+        if (playerAudio == null || playerHitSfx == null) {
+            return;
+        }
+
+        playerAudio.pitch = 1f;
+        if (playerHitSfx.randomizePitch) {
+            playerAudio.pitch = Random.Range(playerHitSfx.minPitch, playerHitSfx.maxPitch);
+        }
+
+        playerAudio.PlayOneShot(playerHitSfx.audioClip, playerHitSfx.volumeScale);
+    }
 }
