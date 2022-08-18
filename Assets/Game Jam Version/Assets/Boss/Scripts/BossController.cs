@@ -54,12 +54,16 @@ public class BossController : MonoBehaviour
 
     float currentPhaseTime = 10;
 
+    [Header("Boss Audio")]
+    [SerializeField] private SoundFile autoAttackChargeSfx;
+    private AudioSource bossAudio;
 
     // Start is called before the first frame update
     void Start()
     {
         this.spellController = GetComponent<SpellController>();
         this.rotationSpeed = this.minRotationSpeed;
+        bossAudio = this.GetComponent<AudioSource>();
 
         StartCoroutine(ShortDelayBeforeEncounter());
     }
@@ -183,25 +187,25 @@ public class BossController : MonoBehaviour
             switch(result) {
                 case 0: 
                     // yield return StartCoroutine(MissileBarrage());
-                    AudioManager.instance.PlayOneShotSoundFile("boss ice wave charge");
+                    PlaySoundEffect(autoAttackChargeSfx);
                     Instantiate(vfx_missileWindup, autoWindupOrb.transform);
                     break;
 
                 case 1:
                     // yield return StartCoroutine(ChainLightning());
-                    AudioManager.instance.PlayOneShotSoundFile("boss ice wave charge");
+                    PlaySoundEffect(autoAttackChargeSfx);
                     Instantiate(vfx_lightningWindup, autoWindupOrb.transform);
                     break;
                 
                 case 2:
                     // yield return StartCoroutine(LariatBurst());
-                    AudioManager.instance.PlayOneShotSoundFile("boss ice wave charge");
+                    PlaySoundEffect(autoAttackChargeSfx);
                     Instantiate(vfx_lariatWindup, autoWindupOrb.transform);
                     break;
 
                 case 3:
                     // yield return StartCoroutine(IceWaveVolley());
-                    AudioManager.instance.PlayOneShotSoundFile("boss ice wave charge");
+                    PlaySoundEffect(autoAttackChargeSfx);
                     Instantiate(vfx_iceShardWindup, autoWindupOrb.transform);
                     break;
 
@@ -339,5 +343,31 @@ public class BossController : MonoBehaviour
         }
 
         ChangePhase();
+    }
+
+    // Boss Audio ------------------------------------------
+
+    bool IsAudioValid(SoundFile soundFile) {
+        if (bossAudio == null || soundFile == null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    void SetBossAudioPitch(SoundFile soundFile) {
+        bossAudio.pitch = 1f;
+        if (soundFile.randomizePitch) {
+            bossAudio.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
+        }
+    }
+
+    void PlaySoundEffect(SoundFile soundFile) {
+        if (!IsAudioValid(soundFile)) {
+            return;
+        }
+
+        SetBossAudioPitch(soundFile);
+        bossAudio.PlayOneShot(soundFile.audioClip, soundFile.volumeScale);
     }
 }
