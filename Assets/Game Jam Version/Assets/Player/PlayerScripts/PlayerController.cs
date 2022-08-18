@@ -105,6 +105,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Player Audio")]
     [SerializeField] private SoundFile playerHitSfx;
+    [SerializeField] private SoundFile playerShootSfx;
     private AudioSource playerAudio;
 
     void Start() {
@@ -336,7 +337,7 @@ public class PlayerController : MonoBehaviour
                 animator.SetBool("FireSide", fireSide);
                 animator.Play("Fire");
 
-                AudioManager.instance.PlayOneShotSoundFile("player fire");
+                PlayShootSoundEffect();
                 fireCooldown = firingInterval;
             }
 
@@ -552,5 +553,18 @@ public class PlayerController : MonoBehaviour
         }
 
         playerAudio.PlayOneShot(playerHitSfx.audioClip, playerHitSfx.volumeScale);
+    }
+
+    void PlayShootSoundEffect() {
+        if (playerAudio == null || playerShootSfx == null) {
+            return;
+        }
+
+        playerAudio.pitch = 1f;
+        if (playerShootSfx.randomizePitch) {
+            playerAudio.pitch = Random.Range(playerShootSfx.minPitch, playerShootSfx.maxPitch);
+        }
+
+        playerAudio.PlayOneShot(playerShootSfx.audioClip, playerShootSfx.volumeScale);   
     }
 }

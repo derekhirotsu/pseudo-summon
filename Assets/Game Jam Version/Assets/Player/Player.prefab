@@ -209,6 +209,7 @@ MonoBehaviour:
   inputVector: {x: 0, y: 0, z: 0}
   aimVector: {x: 0, y: 0, z: 0}
   playerHitSfx: {fileID: 11400000, guid: 2b46e1e46c042a344bb6e3f65cf6437b, type: 2}
+  playerShootSfx: {fileID: 11400000, guid: bcea55f6b995a6349a6cb57843ebe252, type: 2}
 --- !u!82 &951325374121236488
 AudioSource:
   m_ObjectHideFlags: 0
