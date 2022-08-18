@@ -1285,6 +1285,10 @@ MonoBehaviour:
   firingInterval: 3
   canFire: 1
   autoAttackChargeSfx: {fileID: 11400000, guid: 3e2c147021f450244ae60025706a24d3, type: 2}
+  iceWaveFireSfx: {fileID: 11400000, guid: 8095aa8c84af2b04983c9227aa62f0d0, type: 2}
+  missileBarrageFireSfx: {fileID: 11400000, guid: 51f2ee48a0e7216438380d22ab381411, type: 2}
+  lariatFireSfx: {fileID: 11400000, guid: dbfaccc2cf397e1408c18a565bda6741, type: 2}
+  lightningFireSfx: {fileID: 11400000, guid: 0a36f79c45cc17e4daafc010a45858d2, type: 2}
 --- !u!114 &7371243993206142166
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -56,6 +56,10 @@ public class BossController : MonoBehaviour
 
     [Header("Boss Audio")]
     [SerializeField] private SoundFile autoAttackChargeSfx;
+    [SerializeField] private SoundFile iceWaveFireSfx;
+    [SerializeField] private SoundFile missileBarrageFireSfx;
+    [SerializeField] private SoundFile lariatFireSfx;
+    [SerializeField] private SoundFile lightningFireSfx;
     private AudioSource bossAudio;
 
     // Start is called before the first frame update
@@ -265,7 +269,7 @@ public class BossController : MonoBehaviour
     private IEnumerator IceWaveVolley() {
         vfx_iceShardCastObject.SetActive(true);
         for (int i = 0; i < 4; i += 1) {
-            AudioManager.instance.PlayOneShotSoundFile("boss ice wave fire");
+            PlaySoundEffect(iceWaveFireSfx);
             Instantiate(vfx_iceShardCast, autoWindupOrb.transform);
             for (int j = 0; j < 40; j += 1) {
                 Fire(iceShard, Vector3.zero, Vector3.zero, 0.8f);
@@ -282,7 +286,7 @@ public class BossController : MonoBehaviour
         vfx_missileCastObject.SetActive(true);
         for (int i = 0; i < 60; i += 1) {
             Fire(magicMissile, Vector3.zero, Vector3.zero, 0.8f);
-            AudioManager.instance.PlayOneShotSoundFile("boss missile barrage fire");
+            PlaySoundEffect(missileBarrageFireSfx);
             yield return new WaitForSeconds(0.08f);
         }
         StartCoroutine(BoolTrigger("ExitAuto"));
@@ -295,7 +299,7 @@ public class BossController : MonoBehaviour
         for (int i = 0; i < 5; i += 1) {
             Instantiate(vfx_lariatCast, autoWindupOrb.transform);
             Fire(lariatBurst, Vector3.zero, Vector3.zero);
-            AudioManager.instance.PlayOneShotSoundFile("boss lariat fire");
+            PlaySoundEffect(lariatFireSfx);
             yield return new WaitForSeconds(1f);
         }
         vfx_lariatCastObject.SetActive(false);
@@ -307,7 +311,7 @@ public class BossController : MonoBehaviour
         vfx_lightningCastObject.SetActive(true);
         for (int i = 0; i < 200; i += 1) {
             Fire(chainLightning, new Vector3(3, 1, 0), Vector3.zero);
-            AudioManager.instance.PlayOneShotSoundFile("boss lightning fire");
+            PlaySoundEffect(lightningFireSfx);
             yield return new WaitForSeconds(0.05f);
         }
         vfx_lightningCastObject.SetActive(false);
