@@ -211,6 +211,9 @@ MonoBehaviour:
   playerHitSfx: {fileID: 11400000, guid: 2b46e1e46c042a344bb6e3f65cf6437b, type: 2}
   playerShootSfx: {fileID: 11400000, guid: bcea55f6b995a6349a6cb57843ebe252, type: 2}
   playerDodgeSfx: {fileID: 11400000, guid: 3956341321d8c8c488ffa90500990918, type: 2}
+  playerSecondaryReadySfx: {fileID: 11400000, guid: 7b442bc071763df4ba4fc68ff949bf37, type: 2}
+  playerSecondaryChargeSfx: {fileID: 11400000, guid: d4fe3e811887f74468ed4378268a32b2, type: 2}
+  playerSecondaryFireSfx: {fileID: 11400000, guid: f24231c600cb6ce498980b1d900cf679, type: 2}
 --- !u!82 &951325374121236488
 AudioSource:
   m_ObjectHideFlags: 0

@@ -51,7 +51,7 @@ public class PlayerController : MonoBehaviour
         if (currentHitCharge < hitsToCharge && !BusterOnCooldown) {
             currentHitCharge++;
             if (currentHitCharge == hitsToCharge) {
-                AudioManager.instance.PlayOneShotSoundFile("player charge beam ready");
+                PlaySoundEffect(playerSecondaryReadySfx);
             }
         }
     }
@@ -107,6 +107,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private SoundFile playerHitSfx;
     [SerializeField] private SoundFile playerShootSfx;
     [SerializeField] private SoundFile playerDodgeSfx;
+    [SerializeField] private SoundFile playerSecondaryReadySfx;
+    [SerializeField] private SoundFile playerSecondaryChargeSfx;
+    [SerializeField] private SoundFile playerSecondaryFireSfx;
     private AudioSource playerAudio;
 
     void Start() {
@@ -357,9 +360,9 @@ public class PlayerController : MonoBehaviour
         busterChargeVFX.SetActive(true);
         speedMod = 0.5f;
 
-            // Animate
+        // Animate
         animator.Play("BusterCharge");
-        AudioManager.instance.PlaySoundFile("player charge beam charge 2");
+        PlaySoundEffect(playerSecondaryChargeSfx);
         yield return new WaitForSeconds(2.5f);
 
         // 2. Create buster projectile
@@ -370,8 +373,8 @@ public class PlayerController : MonoBehaviour
 
             // Animate
         animator.Play("BusterFire");
-        AudioManager.instance.PlayOneShotSoundFile("player charge beam fire");
-            // This is necessary to allow the collider a chance to register the hit
+        PlaySoundEffect(playerSecondaryFireSfx);
+        // This is necessary to allow the collider a chance to register the hit
         yield return new WaitForSecondsRealtime(0.05f);
 
         busterEffect.transform.parent = null;
