@@ -20,7 +20,6 @@ public class Music : MonoBehaviour
         source = GetComponent<AudioSource>();
         SetMusicTrack(options.GetMusicTrack());
         lowPassFilter = GetComponent<AudioLowPassFilter>();
-        source.volume = options.GetMusicVolume();
         if (instance == null) {
             instance = this;
             DontDestroyOnLoad(instance);
@@ -40,23 +39,18 @@ public class Music : MonoBehaviour
     }
 
     void OnEnable() {
-        
         //Tell our 'OnLevelFinishedLoading' function to start listening for a scene change as soon as this script is enabled.
         SceneManager.sceneLoaded += OnSceneLoad;
-        options.onMusicOptionsChange += SetVolumeLevel;
         options.onMusicTrackChange += SetMusicTrack;
     }
 
     void OnDisable() {
-        
         //Tell our 'OnLevelFinishedLoading' function to start listening for a scene change as soon as this script is enabled.
         SceneManager.sceneLoaded -= OnSceneLoad;
-        options.onMusicOptionsChange -= SetVolumeLevel;
         options.onMusicTrackChange -= SetMusicTrack;
     }
 
     protected void OnSceneLoad(Scene scene, LoadSceneMode mode) {
-        // Scene mScene = SceneManager.GetActiveScene();
         if (scene.name.Equals("StartScene")) {
             Destroy(this.gameObject);
         } else { 
@@ -74,10 +68,6 @@ public class Music : MonoBehaviour
 
         source.clip = selectedTrack;
         source.Play();
-    }
-
-    public void SetVolumeLevel(float volume) {
-        source.volume = volume;
     }
 
     public void SetLowPassFilterEnabled(bool enabled) {

@@ -23,36 +23,15 @@ public class OptionsMenu : MonoBehaviour
         sfxVolumeSlider.onValueChanged.AddListener(SetSfxVolume);
     }
 
-    // Start is called before the first frame update
-    // void Start()
-    // {
-    //     musicVolumeSlider.onValueChanged.AddListener(delegate { OnMusicVolumeSliderChanged(); });
-    //     sfxVolumeSlider.onValueChanged.AddListener(delegate { OnSFXVolumeSliderChanged(); });
-    // }
-
     void OnEnable() {
-        // musicVolumeSlider.value = OptionsController.instance.GetMusicVolume();
-        // sfxVolumeSlider.value = OptionsController.instance.GetSfxVolume();
-
         musicVolumeSlider.value = GetMusicVolume();
         sfxVolumeSlider.value = GetSfxVolume();
-        qualityDropdown.value = QualitySettings.GetQualityLevel();
-        
+        qualityDropdown.value = QualitySettings.GetQualityLevel(); 
     }
     
     public void OnGraphicsQualitySelection(int qualityIndex) {
         QualitySettings.SetQualityLevel(qualityIndex);
     }
-
-    // public void OnMusicVolumeSliderChanged() {
-    //     // Debug.Log("music volume:" + musicVolumeSlider.value);
-    //     OptionsController.instance.OnMusicVolumeChange(musicVolumeSlider.value);
-    // }
-
-    // public void OnSFXVolumeSliderChanged() {
-    //     // Debug.Log("sfx volume:" + sfxVolumeSlider.value);
-    //     OptionsController.instance.OnSfxVolumeChange(sfxVolumeSlider.value);
-    // }
 
     public void OnMusicTrackSelect(int trackNumber) {
         OptionsController.instance.OnMusicChangeTrack(trackNumber);
