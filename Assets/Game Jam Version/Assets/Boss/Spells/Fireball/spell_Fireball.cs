@@ -7,12 +7,17 @@ public class spell_Fireball : MonoBehaviour
     [SerializeField] GameObject projectilePrefab;
     [SerializeField] float projectileSpeed;
     [SerializeField] float spellDuration;
+    [SerializeField] private SoundFile fireballSfx;
+    private AudioSource audioSource;
 
     Transform platform;
 
     enum Side {Top, Bottom, Left, Right};
 
-    // Start is called before the first frame update
+    void Awake() {
+        audioSource = this.GetComponent<AudioSource>();
+    }
+
     public void Cast(int pattern)
     {
         StartCoroutine(CastCoroutine(pattern));
@@ -64,7 +69,7 @@ public class spell_Fireball : MonoBehaviour
                 break;
         }
         
-        AudioManager.instance.PlayOneShotSoundFile("boss fireball fire");
+        PlaySoundEffect(fireballSfx);
 
         yield return new WaitForSeconds(this.spellDuration);
         Destroy(this.gameObject);
@@ -242,5 +247,31 @@ public class spell_Fireball : MonoBehaviour
             CreateProjectile(location, 0);
             yield return new WaitForSeconds(0.15f);
         }
+    }
+
+    // Audio ------------------------------------------
+
+    bool IsAudioValid(SoundFile soundFile) {
+        if (audioSource == null || soundFile == null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    void SetAudioPitch(SoundFile soundFile) {
+        audioSource.pitch = 1f;
+        if (soundFile.randomizePitch) {
+            audioSource.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
+        }
+    }
+
+    void PlaySoundEffect(SoundFile soundFile) {
+        if (!IsAudioValid(soundFile)) {
+            return;
+        }
+
+        SetAudioPitch(soundFile);
+        audioSource.PlayOneShot(soundFile.audioClip, soundFile.volumeScale);
     }
 }
