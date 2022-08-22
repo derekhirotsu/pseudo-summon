@@ -1217,7 +1217,7 @@ GameObject:
   - component: {fileID: 6208915446036521333}
   m_Layer: 8
   m_Name: Boss
-  m_TagString: Untagged
+  m_TagString: Boss
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1289,6 +1289,7 @@ MonoBehaviour:
   missileBarrageFireSfx: {fileID: 11400000, guid: 51f2ee48a0e7216438380d22ab381411, type: 2}
   lariatFireSfx: {fileID: 11400000, guid: dbfaccc2cf397e1408c18a565bda6741, type: 2}
   lightningFireSfx: {fileID: 11400000, guid: 0a36f79c45cc17e4daafc010a45858d2, type: 2}
+  bossHitSfx: {fileID: 11400000, guid: b4d59fd8b5e1e974184e186f2df48938, type: 2}
 --- !u!114 &7371243993206142166
 MonoBehaviour:
   m_ObjectHideFlags: 0
