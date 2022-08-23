@@ -65,7 +65,7 @@ namespace PseudoSummon
         [SerializeField] private SoundFile lariatFireSfx;
         [SerializeField] private SoundFile lightningFireSfx;
         [SerializeField] private SoundFile bossHitSfx;
-        private AudioSource bossAudio;
+        private IAudioPlayer bossAudio;
 
         public event EventHandler DamageTaken;
         public event EventHandler Died;
@@ -75,10 +75,11 @@ namespace PseudoSummon
         {
             spellController = GetComponent<SpellController>();
             rotationSpeed = minRotationSpeed;
-            bossAudio = GetComponent<AudioSource>();
+            bossAudio = GetComponent<IAudioPlayer>();
 
             StartCoroutine(ShortDelayBeforeEncounter());
         }
+
 
         protected IEnumerator ShortDelayBeforeEncounter()
         {
@@ -147,7 +148,7 @@ namespace PseudoSummon
             // Boss taking damage check
             if (bossHealth.TookDamage(consumeTrigger: true))
             {
-                PlaySoundEffect(bossHitSfx);
+                bossAudio.PlaySound(bossHitSfx);
                 // ... See Player.OnBossHit
                 DamageTaken.Invoke(this, EventArgs.Empty);
             }
@@ -240,28 +241,28 @@ namespace PseudoSummon
                 switch (result)
                 {
                     case 0:
-                        PlaySoundEffect(autoAttackChargeSfx);
+                        bossAudio.PlaySound(autoAttackChargeSfx);
                         Instantiate(vfx_missileWindup, autoWindupOrb.transform);
                         yield return new WaitForSeconds(0.5f);
                         yield return StartCoroutine(MissileBarrage());
                         break;
 
                     case 1:
-                        PlaySoundEffect(autoAttackChargeSfx);
+                        bossAudio.PlaySound(autoAttackChargeSfx);
                         Instantiate(vfx_lightningWindup, autoWindupOrb.transform);
                         yield return new WaitForSeconds(0.5f);
                         yield return StartCoroutine(ChainLightning());
                         break;
 
                     case 2:
-                        PlaySoundEffect(autoAttackChargeSfx);
+                        bossAudio.PlaySound(autoAttackChargeSfx);
                         Instantiate(vfx_lariatWindup, autoWindupOrb.transform);
                         yield return new WaitForSeconds(0.5f);
                         yield return StartCoroutine(LariatBurst());
                         break;
 
                     case 3:
-                        PlaySoundEffect(autoAttackChargeSfx);
+                        bossAudio.PlaySound(autoAttackChargeSfx);
                         Instantiate(vfx_iceShardWindup, autoWindupOrb.transform);
                         yield return new WaitForSeconds(0.5f);
                         yield return StartCoroutine(IceWaveVolley());
@@ -302,7 +303,7 @@ namespace PseudoSummon
             vfx_iceShardCastObject.SetActive(true);
             for (int i = 0; i < 4; i += 1)
             {
-                PlaySoundEffect(iceWaveFireSfx);
+                bossAudio.PlaySound(iceWaveFireSfx);
                 Instantiate(vfx_iceShardCast, autoWindupOrb.transform);
                 for (int j = 0; j < 40; j += 1)
                 {
@@ -322,7 +323,7 @@ namespace PseudoSummon
             for (int i = 0; i < 60; i += 1)
             {
                 Fire(magicMissile, Vector3.zero, Vector3.zero, 0.8f);
-                PlaySoundEffect(missileBarrageFireSfx);
+                bossAudio.PlaySound(missileBarrageFireSfx);
                 yield return new WaitForSeconds(0.08f);
             }
             StartCoroutine(BoolTrigger("ExitAuto"));
@@ -337,7 +338,7 @@ namespace PseudoSummon
             {
                 Instantiate(vfx_lariatCast, autoWindupOrb.transform);
                 Fire(lariatBurst, Vector3.zero, Vector3.zero);
-                PlaySoundEffect(lariatFireSfx);
+                bossAudio.PlaySound(lariatFireSfx);
                 yield return new WaitForSeconds(1f);
             }
             vfx_lariatCastObject.SetActive(false);
@@ -351,7 +352,7 @@ namespace PseudoSummon
             for (int i = 0; i < 200; i += 1)
             {
                 Fire(chainLightning, new Vector3(3, 1, 0), Vector3.zero);
-                PlaySoundEffect(lightningFireSfx);
+                bossAudio.PlaySound(lightningFireSfx);
                 yield return new WaitForSeconds(0.05f);
             }
             vfx_lightningCastObject.SetActive(false);
@@ -392,38 +393,6 @@ namespace PseudoSummon
             }
 
             ChangePhase();
-        }
-
-        // Boss Audio ------------------------------------------
-
-        bool IsAudioValid(SoundFile soundFile)
-        {
-            if (bossAudio == null || soundFile == null)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        void SetBossAudioPitch(SoundFile soundFile)
-        {
-            bossAudio.pitch = 1f;
-            if (soundFile.randomizePitch)
-            {
-                bossAudio.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
-            }
-        }
-
-        void PlaySoundEffect(SoundFile soundFile)
-        {
-            if (!IsAudioValid(soundFile))
-            {
-                return;
-            }
-
-            SetBossAudioPitch(soundFile);
-            bossAudio.PlayOneShot(soundFile.audioClip, soundFile.volumeScale);
         }
     }
 }

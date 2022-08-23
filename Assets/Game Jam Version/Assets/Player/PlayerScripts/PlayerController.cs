@@ -1,5 +1,5 @@
+using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace PseudoSummon
@@ -13,7 +13,6 @@ namespace PseudoSummon
         protected bool fireSide = false;
         HealthTracker health;
         [Header("Util")]
-        [SerializeField] protected PlayerCanvas UI;
         [SerializeField] protected CameraHolder camHolder;
 
         // Serialized fields
@@ -55,7 +54,7 @@ namespace PseudoSummon
                 currentHitCharge++;
                 if (currentHitCharge == hitsToCharge)
                 {
-                    PlaySoundEffect(playerSecondaryReadySfx);
+                    playerAudio.PlaySound(playerSecondaryReadySfx);
                 }
             }
         }
@@ -85,7 +84,7 @@ namespace PseudoSummon
         protected IEnumerator shootCoroutine;
         protected IEnumerator unpauseCoroutine;
         protected IEnumerator invincibilityCoroutine;
-        protected IEnumerator hitstopCoroutine;
+        public IEnumerator hitstopCoroutine;
         protected IEnumerator HitStop(float duration)
         {
             Time.timeScale = 0f;
@@ -112,8 +111,6 @@ namespace PseudoSummon
         [SerializeField] protected Vector3 aimVector;
         public Vector3 AimVector { get { return aimVector; } }
 
-        bool isPaused = false;
-
         [Header("Player Audio")]
         [SerializeField] private SoundFile playerHitSfx;
         [SerializeField] private SoundFile playerShootSfx;
@@ -121,17 +118,22 @@ namespace PseudoSummon
         [SerializeField] private SoundFile playerSecondaryReadySfx;
         [SerializeField] private SoundFile playerSecondaryChargeSfx;
         [SerializeField] private SoundFile playerSecondaryFireSfx;
-        private AudioSource playerAudio;
+        private IAudioPlayer playerAudio;
 
+        public event EventHandler Died;
+
+        public bool IsPaused = false;
         public bool CanDie = true;
+        public bool IsDead = false;
+
         void Start()
         {
-            isPaused = false;
+            IsPaused = false;
             cam = Camera.main;
             health = GetComponent<HealthTracker>();
             hitBox = GetComponent<CapsuleCollider>();
             animator = GetComponent<Animator>();
-            playerAudio = GetComponent<AudioSource>();
+            playerAudio = GetComponent<IAudioPlayer>();
 
             if (platform == null)
             {
@@ -144,7 +146,7 @@ namespace PseudoSummon
             // Me taking damage check
             if (health.TookDamage(consumeTrigger: true))
             {
-                PlaySoundEffect(playerHitSfx);
+                playerAudio.PlaySound(playerHitSfx);
 
                 if (invincibilityCoroutine != null)
                 {
@@ -169,6 +171,10 @@ namespace PseudoSummon
         // TODO: This could be refactored to decouple player from boss/other systems.
         public void OnBossHit()
         {
+            if (!enabled)
+            {
+                return;
+            }
             AddToCharge();
 
             // Small hitstop
@@ -263,7 +269,7 @@ namespace PseudoSummon
         void HandleRollInput()
         {
             // If Roll
-            if (Input.GetButtonDown("Roll") && rollCoroutine == null && canStillRollOutOfBuster)
+            if (Input.GetButtonDown("Roll") && rollCoroutine == null && canStillRollOutOfBuster && !IsDead)
             {
 
                 // Invincibility rolls shouldn't interrupt damage rolls
@@ -281,7 +287,7 @@ namespace PseudoSummon
                 {
                     busterChargeVFX.SetActive(false);
                     busterInProgress = false;
-                    playerAudio.Stop();
+                    playerAudio.StopSound();
                 }
 
                 if (shootCoroutine != null)
@@ -293,53 +299,7 @@ namespace PseudoSummon
                 // Dashy move
                 rollCoroutine = Roll();
                 StartCoroutine(rollCoroutine);
-                // Invincibility rolls should replace damage rolls
-                // if (invincibilityCoroutine != null ) {
-                //     StopCoroutine(invincibilityCoroutine);
-                // }
-
-                // invincibilityCoroutine = GoInvincible(rollIFrameDuration);
-                // StartCoroutine(invincibilityCoroutine);
-
             }
-        }
-
-        void HandlePauseInput()
-        {
-            if (Input.GetButtonDown("Pause"))
-            {
-                if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
-                {
-                    return;
-                }
-
-                if (hitstopCoroutine != null)
-                {
-                    StopCoroutine(hitstopCoroutine);
-                }
-
-                if (isPaused)
-                {
-                    Unpause();
-                }
-                else
-                {
-                    Music.instance.SetLowPassFilterEnabled(true);
-                    Debug.Log("Paused");
-                    Time.timeScale = 0f;
-                    isPaused = true;
-                    UI.DisplayPauseUI();
-                }
-            }
-        }
-
-        public void Unpause()
-        {
-            Music.instance.SetLowPassFilterEnabled(false);
-            isPaused = false;
-            Time.timeScale = 1f;
-            UI.HidePauseUI();
-            UI.HideOptionsUI();
         }
 
         // Update is called once per frame
@@ -348,7 +308,7 @@ namespace PseudoSummon
 
             CheckPlayerHit();
 
-            if (!isPaused)
+            if (!IsPaused)
             {
                 HandleMovementInput();
                 HandleAimingInput();
@@ -358,7 +318,7 @@ namespace PseudoSummon
             }
 
 
-            HandlePauseInput();
+            //HandlePauseInput();
         }
 
         protected IEnumerator Shoot()
@@ -368,7 +328,6 @@ namespace PseudoSummon
 
             while (Input.GetButton("Fire1"))
             {
-
                 if (fireCooldown <= 0 && rollCoroutine == null)
                 {
                     // Debug.Log("Fire!");
@@ -381,7 +340,7 @@ namespace PseudoSummon
                     animator.SetBool("FireSide", fireSide);
                     animator.Play("Fire");
 
-                    PlaySoundEffect(playerShootSfx);
+                    playerAudio.PlaySound(playerShootSfx);
                     fireCooldown = firingInterval;
                 }
 
@@ -403,7 +362,7 @@ namespace PseudoSummon
 
             // Animate
             animator.Play("BusterCharge");
-            PlaySoundEffect(playerSecondaryChargeSfx);
+            playerAudio.PlaySound(playerSecondaryChargeSfx);
             yield return new WaitForSeconds(2.5f);
 
             // 2. Create buster projectile
@@ -414,7 +373,7 @@ namespace PseudoSummon
 
             // Animate
             animator.Play("BusterFire");
-            PlaySoundEffect(playerSecondaryFireSfx);
+            playerAudio.PlaySound(playerSecondaryFireSfx);
             // This is necessary to allow the collider a chance to register the hit
             yield return new WaitForSecondsRealtime(0.05f);
 
@@ -440,6 +399,7 @@ namespace PseudoSummon
             currentHitCharge = 0;
 
             StartCoroutine(CooldownBuster());
+
 
             busterChargeVFX.SetActive(false);
             busterInProgress = false;
@@ -470,7 +430,7 @@ namespace PseudoSummon
 
         protected IEnumerator Roll()
         {
-            PlaySoundEffect(playerDodgeSfx);
+            playerAudio.PlaySound(playerDodgeSfx);
             Vector3 rollVector;
             if (rawInputVector.magnitude > Mathf.Epsilon)
             {
@@ -593,46 +553,12 @@ namespace PseudoSummon
 
         public void Die()
         {
-            Debug.Log("Ouchie :(");
+            Died?.Invoke(this, EventArgs.Empty);
             hitBox.enabled = false;
-
-            playerAudio.Stop();
-            UI.DisplayDeathUI(won: false);
-
             enabled = false;
             gameObject.SetActive(false);
-        }
-
-        // Player Audio ------------------------------------------
-
-        bool IsAudioValid(SoundFile soundFile)
-        {
-            if (playerAudio == null || soundFile == null)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        void SetPlayerAudioPitch(SoundFile soundFile)
-        {
-            playerAudio.pitch = 1f;
-            if (soundFile.randomizePitch)
-            {
-                playerAudio.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
-            }
-        }
-
-        void PlaySoundEffect(SoundFile soundFile)
-        {
-            if (!IsAudioValid(soundFile))
-            {
-                return;
-            }
-
-            SetPlayerAudioPitch(soundFile);
-            playerAudio.PlayOneShot(soundFile.audioClip, soundFile.volumeScale);
+            playerAudio.StopSound();
+            IsDead = true;
         }
     }
 }

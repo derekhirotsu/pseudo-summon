@@ -11,6 +11,23 @@ namespace PseudoSummon
         private PlayerController playerController;
         private BossController bossController;
 
+
+        private void Start()
+        {
+            FindBoss();
+            FindPlayer();
+
+            playerController.Died += PlayerController_Died;
+
+            bossController.DamageTaken += BossController_DamageTaken;
+            bossController.Died += BossController_Died;
+        }
+
+        private void Update()
+        {
+            HandlePauseInput();
+        }
+
         private void FindPlayer()
         {
             playerController = GameObject.FindGameObjectWithTag("Player")?.GetComponent<PlayerController>();
@@ -21,13 +38,10 @@ namespace PseudoSummon
             bossController = GameObject.FindGameObjectWithTag("Boss")?.GetComponent<BossController>();
         }
 
-        private void Start()
-        {
-            FindBoss();
-            FindPlayer();
 
-            bossController.DamageTaken += BossController_DamageTaken;
-            bossController.Died += BossController_Died;
+        private void PlayerController_Died(object sender, System.EventArgs e)
+        {
+            UI.DisplayDeathUI(won: false);
         }
 
         private void BossController_Died(object sender, System.EventArgs e)
@@ -40,6 +54,48 @@ namespace PseudoSummon
         private void BossController_DamageTaken(object sender, System.EventArgs e)
         {
             playerController.OnBossHit();
+        }
+
+        private void HandlePauseInput()
+        {
+            if (Input.GetButtonDown("Pause"))
+            {
+                if (UI_TutorialOnFirstPlay.Instance.FirstPlay || playerController.IsDead)
+                {
+                    return;
+                }
+
+                if (Time.timeScale == 0f)
+                {
+                    Unpause();
+                }
+                else
+                {
+                    Pause();
+                }
+            }
+        }
+
+        private void Pause()
+        {
+            if (playerController.hitstopCoroutine != null)
+            {
+                StopCoroutine(playerController.hitstopCoroutine);
+            }
+
+            Music.instance.SetLowPassFilterEnabled(true);
+            Time.timeScale = 0f;
+            playerController.IsPaused = true;
+            UI.DisplayPauseUI();
+        }
+
+        public void Unpause()
+        {
+            Music.instance.SetLowPassFilterEnabled(false);
+            playerController.IsPaused = false;
+            Time.timeScale = 1f;
+            UI.HidePauseUI();
+            UI.HideOptionsUI();
         }
     }
 }
