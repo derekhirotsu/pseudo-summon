@@ -82,34 +82,15 @@ namespace PseudoSummon
 
         protected IEnumerator rollCoroutine;
         protected IEnumerator shootCoroutine;
-        protected IEnumerator unpauseCoroutine;
         protected IEnumerator invincibilityCoroutine;
-        public IEnumerator hitstopCoroutine;
-        protected IEnumerator HitStop(float duration)
-        {
-            Time.timeScale = 0f;
-
-            yield return new WaitForSecondsRealtime(duration);
-
-            hitstopCoroutine = null;
-            Time.timeScale = 1f;
-        }
 
         [Header("Position Bounds")]
         [SerializeField] protected Transform platform;
         [SerializeField] protected float platformBoundsX = 9f;
         [SerializeField] protected float platformBoundsZ = 6.5f;
 
-        // Input Management
-        [Header("Input Fields")]
-        [SerializeField] protected Vector3 rawInputVector;
-        public Vector3 RawInputVector { get { return rawInputVector; } }
-
-        [SerializeField] protected Vector3 inputVector;
-        public Vector3 InputVector { get { return inputVector; } }
-
-        [SerializeField] protected Vector3 aimVector;
-        public Vector3 AimVector { get { return aimVector; } }
+        protected Vector3 rawInputVector;
+        protected Vector3 aimVector;
 
         [Header("Player Audio")]
         [SerializeField] private SoundFile playerHitSfx;
@@ -134,11 +115,6 @@ namespace PseudoSummon
             hitBox = GetComponent<CapsuleCollider>();
             animator = GetComponent<Animator>();
             playerAudio = GetComponent<IAudioPlayer>();
-
-            if (platform == null)
-            {
-                Debug.LogWarning("No Platform was given to the player!");
-            }
         }
 
         void CheckPlayerHit()
@@ -155,16 +131,8 @@ namespace PseudoSummon
                 invincibilityCoroutine = GoInvincible(1f);
                 StartCoroutine(invincibilityCoroutine);
 
-                // Big hitstop
                 camHolder.CameraShake(0.35f, 0.35f);
-
-                if (hitstopCoroutine != null)
-                {
-                    StopCoroutine(hitstopCoroutine);
-                }
-
-                hitstopCoroutine = HitStop(0.3f);
-                StartCoroutine(hitstopCoroutine);
+                camHolder.HitStop(0.3f);
             }
         }
 
@@ -177,17 +145,8 @@ namespace PseudoSummon
             }
             AddToCharge();
 
-            // Small hitstop
             camHolder.CameraShake(0.1f, 0.1f);
-
-            if (hitstopCoroutine != null)
-            {
-                StopCoroutine(hitstopCoroutine);
-            }
-
-            hitstopCoroutine = HitStop(0.03f);
-            StartCoroutine(hitstopCoroutine);
-
+            camHolder.HitStop(0.03f);
 
             UI_ScoreTracker.Instance.AddScore(200, multiply: true);
         }
@@ -199,17 +158,12 @@ namespace PseudoSummon
             rawVec.x = Input.GetAxisRaw("Horizontal");
             rawVec.z = Input.GetAxisRaw("Vertical");
             rawInputVector = rawVec;
-
-            // Get Axis (analog input, from 0 to 1)
-            Vector3 axis = Vector3.zero;
-            axis.x = Input.GetAxis("Horizontal");
-            axis.z = Input.GetAxis("Vertical");
-            inputVector = axis;
         }
 
         void HandleAimingInput()
         {
-            if (hitstopCoroutine != null)
+            // If in middle of hit stop do not allow turning.
+            if (Time.timeScale == 0f)
             {
                 return;
             }
@@ -226,7 +180,6 @@ namespace PseudoSummon
 
         void HandleFiringInput()
         {
-            // If Shoot and not rolling
             fireCooldown -= Time.deltaTime;
 
             if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
@@ -245,7 +198,6 @@ namespace PseudoSummon
 
         void HandleBusterInput()
         {
-            // If Shoot and not rolling
             if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
             {
                 return;
@@ -268,12 +220,10 @@ namespace PseudoSummon
 
         void HandleRollInput()
         {
-            // If Roll
             if (Input.GetButtonDown("Roll") && rollCoroutine == null && canStillRollOutOfBuster && !IsDead)
             {
 
                 // Invincibility rolls shouldn't interrupt damage rolls
-
                 if (invincibilityCoroutine != null)
                 {
                     StopCoroutine(invincibilityCoroutine);
@@ -282,7 +232,6 @@ namespace PseudoSummon
                 invincibilityCoroutine = GoInvincible(rollIFrameDuration);
                 StartCoroutine(invincibilityCoroutine);
 
-                // Debug.Log("Roll");
                 if (busterInProgress)
                 {
                     busterChargeVFX.SetActive(false);
@@ -316,9 +265,6 @@ namespace PseudoSummon
                 HandleBusterInput();
                 HandleRollInput();
             }
-
-
-            //HandlePauseInput();
         }
 
         protected IEnumerator Shoot()
@@ -330,7 +276,6 @@ namespace PseudoSummon
             {
                 if (fireCooldown <= 0 && rollCoroutine == null)
                 {
-                    // Debug.Log("Fire!");
                     TestBullet newBullet = Instantiate(bulletPrefab, transform.position + aimVector, Quaternion.identity).GetComponent<TestBullet>();
                     newBullet.SetTargetLayer(targetLayer);
                     newBullet.SetDirection(aimVector);
@@ -384,12 +329,7 @@ namespace PseudoSummon
             // 3. Big hitstop and hit registration
             camHolder.CameraFlash(10f);
             camHolder.CameraShake(0.8f, 1.0f);
-            if (hitstopCoroutine != null)
-            {
-                StopCoroutine(hitstopCoroutine);
-            }
-            hitstopCoroutine = HitStop(0.7f);
-            StartCoroutine(hitstopCoroutine);
+            camHolder.HitStop(0.7f);
 
             yield return new WaitForSecondsRealtime(0.7f);
 
@@ -399,7 +339,6 @@ namespace PseudoSummon
             currentHitCharge = 0;
 
             StartCoroutine(CooldownBuster());
-
 
             busterChargeVFX.SetActive(false);
             busterInProgress = false;
@@ -457,9 +396,6 @@ namespace PseudoSummon
 
             // Initial parameters
             speedMod = 1f;
-            float inAirTime = 0.5f;
-            float onGroundTime = 1 - inAirTime;
-            // hitBox.enabled = false;
 
             // Section of the roll in the air
             float rollInAirTimer = playerRollTime;
@@ -471,7 +407,6 @@ namespace PseudoSummon
                 yield return new WaitForFixedUpdate();
             }
 
-            // hitBox.enabled = true;
             rolling = false;
 
             speedMod = 0.3f;
@@ -517,38 +452,36 @@ namespace PseudoSummon
                 return;
             }
 
+            if (platform == null)
+            {
+                Debug.LogWarning("No platform assigned! Drag our platform object to the PlayerController script!");
+                return;
+            }
+
             // 1. Move the player
             transform.position += moveDirection.normalized * moveSpeed * Time.fixedDeltaTime;
 
-            if (platform != null)
+            // 2. Bind the player on X axis
+            if (transform.position.x > platform.transform.position.x + platformBoundsX)
             {
-                // 2. Bind the player on X axis
-                if (transform.position.x > platform.transform.position.x + platformBoundsX)
-                {
-                    transform.position = new Vector3(platform.transform.position.x + platformBoundsX, transform.position.y, transform.position.z);
-                }
-
-                if (transform.position.x < platform.transform.position.x - platformBoundsX)
-                {
-                    transform.position = new Vector3(platform.transform.position.x - platformBoundsX, transform.position.y, transform.position.z);
-                }
-
-                // 3. Bind the player on Y axis
-                if (transform.position.z > platform.transform.position.z + platformBoundsZ)
-                {
-                    transform.position = new Vector3(transform.position.x, transform.position.y, platform.transform.position.z + platformBoundsZ);
-                }
-
-                if (transform.position.z < platform.transform.position.z - platformBoundsZ)
-                {
-                    transform.position = new Vector3(transform.position.x, transform.position.y, platform.transform.position.z - platformBoundsZ);
-                }
-            }
-            else
-            {
-                Debug.LogWarning("No platform assigned! Drag our platform object to the PlayerController script!");
+                transform.position = new Vector3(platform.transform.position.x + platformBoundsX, transform.position.y, transform.position.z);
             }
 
+            if (transform.position.x < platform.transform.position.x - platformBoundsX)
+            {
+                transform.position = new Vector3(platform.transform.position.x - platformBoundsX, transform.position.y, transform.position.z);
+            }
+
+            // 3. Bind the player on Z axis
+            if (transform.position.z > platform.transform.position.z + platformBoundsZ)
+            {
+                transform.position = new Vector3(transform.position.x, transform.position.y, platform.transform.position.z + platformBoundsZ);
+            }
+
+            if (transform.position.z < platform.transform.position.z - platformBoundsZ)
+            {
+                transform.position = new Vector3(transform.position.x, transform.position.y, platform.transform.position.z - platformBoundsZ);
+            }
         }
 
         public void Die()

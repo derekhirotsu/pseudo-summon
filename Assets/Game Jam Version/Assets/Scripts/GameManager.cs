@@ -7,7 +7,8 @@ namespace PseudoSummon
     public class GameManager : MonoBehaviour
     {
         [SerializeField] protected PlayerCanvas UI;
-
+        [SerializeField] private CameraHolder camHolder;
+        
         private PlayerController playerController;
         private BossController bossController;
 
@@ -65,7 +66,7 @@ namespace PseudoSummon
                     return;
                 }
 
-                if (Time.timeScale == 0f)
+                if (playerController.IsPaused)
                 {
                     Unpause();
                 }
@@ -78,10 +79,7 @@ namespace PseudoSummon
 
         private void Pause()
         {
-            if (playerController.hitstopCoroutine != null)
-            {
-                StopCoroutine(playerController.hitstopCoroutine);
-            }
+            camHolder.CancelHitStop();
 
             Music.instance.SetLowPassFilterEnabled(true);
             Time.timeScale = 0f;
