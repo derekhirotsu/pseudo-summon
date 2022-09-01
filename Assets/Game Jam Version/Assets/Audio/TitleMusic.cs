@@ -6,13 +6,17 @@ public class TitleMusic : MonoBehaviour
 {
     private AudioSource source;
 
-    void Awake()
+    private void Awake()
     {
         source = GetComponent<AudioSource>();
+    }
+
+    private void Start()
+    {
         StartCoroutine(WaitToPlay());
     }
 
-    IEnumerator WaitToPlay() {
+    private IEnumerator WaitToPlay() {
         yield return new WaitForSeconds(2f);
         source.Play();
     }

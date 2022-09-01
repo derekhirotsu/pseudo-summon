@@ -4,22 +4,21 @@ using UnityEngine;
 
 public class auto_Lariat : MonoBehaviour
 {
-    [SerializeField] protected float rotationSpeed = 200;
-    float yRotation = 0;
-
-    HealthTracker health;
-
-    [SerializeField] List<TestBullet> childProjectiles;
+    [SerializeField] private float rotationSpeed = 200;
     [SerializeField] private SoundFile hitSfx;
+    [SerializeField] private List<TestBullet> childProjectiles;
+
+    private HealthTracker health;
     private AudioSource audioSource;
 
-    void Awake() {
-        audioSource = this.GetComponent<AudioSource>();
+    private float yRotation = 0;
+
+    private void Awake() {
+        audioSource = GetComponent<AudioSource>();
+        health = GetComponent<HealthTracker>();
     }
 
-    void Start() {
-        health = this.GetComponent<HealthTracker>();
-
+    private void Start() {
         foreach (Transform child in transform) {
             TestBullet projectile = child.GetComponent<TestBullet>();
 
@@ -29,14 +28,12 @@ public class auto_Lariat : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void FixedUpdate()
+    private void FixedUpdate()
     {
-        float diff = Time.fixedDeltaTime * this.rotationSpeed;
+        float diff = Time.fixedDeltaTime * rotationSpeed;
         yRotation = (yRotation + diff) % 360;
             
-        // float yRotation = this.transform.rotation.y + (rotationSpeed * Time.fixedDeltaTime);
-        this.transform.rotation = Quaternion.Slerp(this.transform.rotation, Quaternion.Euler(0, yRotation, 0), 1f);
+        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(0, yRotation, 0), 1f);
 
         if (health.TookDamage(consumeTrigger:true)) {
             PlaySoundEffect(hitSfx);
@@ -47,22 +44,22 @@ public class auto_Lariat : MonoBehaviour
         }
     }
 
-    protected void CastOutward() {
-        this.transform.DetachChildren();
+    private void CastOutward() {
+        transform.DetachChildren();
 
         for (int i = childProjectiles.Count-1; i >= 0; --i) {
             if (childProjectiles[i] != null) {
-                Vector3 outwardVector = (childProjectiles[i].transform.position - this.transform.position).normalized;
+                Vector3 outwardVector = (childProjectiles[i].transform.position - transform.position).normalized;
                 childProjectiles[i].SetDirection(outwardVector);
             }
         }
 
-        Destroy(this.gameObject);
+        Destroy(gameObject);
     }
 
     // Audio ------------------------------------------
 
-    bool IsAudioValid(SoundFile soundFile) {
+    private bool IsAudioValid(SoundFile soundFile) {
         if (audioSource == null || soundFile == null) {
             return false;
         }
@@ -70,14 +67,14 @@ public class auto_Lariat : MonoBehaviour
         return true;
     }
 
-    void SetAudioPitch(SoundFile soundFile) {
+    private void SetAudioPitch(SoundFile soundFile) {
         audioSource.pitch = 1f;
         if (soundFile.randomizePitch) {
             audioSource.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
         }
     }
 
-    void PlaySoundEffect(SoundFile soundFile) {
+    private void PlaySoundEffect(SoundFile soundFile) {
         if (!IsAudioValid(soundFile)) {
             return;
         }

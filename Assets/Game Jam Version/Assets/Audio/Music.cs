@@ -39,13 +39,13 @@ public class Music : MonoBehaviour
     }
 
     void OnEnable() {
-        //Tell our 'OnLevelFinishedLoading' function to start listening for a scene change as soon as this script is enabled.
+        // Tell our 'OnLevelFinishedLoading' function to start listening for a scene change as soon as this script is enabled.
         SceneManager.sceneLoaded += OnSceneLoad;
         options.onMusicTrackChange += SetMusicTrack;
     }
 
     void OnDisable() {
-        //Tell our 'OnLevelFinishedLoading' function to start listening for a scene change as soon as this script is enabled.
+        // Tell our 'OnLevelFinishedLoading' function to start listening for a scene change as soon as this script is enabled.
         SceneManager.sceneLoaded -= OnSceneLoad;
         options.onMusicTrackChange -= SetMusicTrack;
     }

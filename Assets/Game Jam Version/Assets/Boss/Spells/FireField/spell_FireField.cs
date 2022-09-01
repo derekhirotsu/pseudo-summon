@@ -1,57 +1,60 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class spell_FireField : MonoBehaviour
 {
-    [SerializeField] GameObject projectilePrefab;
-    [SerializeField] float spellDuration;
-    [SerializeField] float spellArmTime;
-    [SerializeField] GameObject inidicator;
-    GameObject fireField;
+    [SerializeField] private GameObject projectilePrefab;
+    [SerializeField] private float spellDuration;
+    [SerializeField] private float spellArmTime;
+    [SerializeField] private GameObject inidicator;
+    private GameObject fireField;
 
     [SerializeField] private SoundFile chargeSfx;
     [SerializeField] private SoundFile detonateSfx;
     private AudioSource audioSource;
 
-    void Awake() {
-        audioSource = this.GetComponent<AudioSource>();
+    private WaitForSeconds spellArmTimeWait;
+    private WaitForSeconds spellDurationWait;
+
+    private void Awake() {
+        audioSource = GetComponent<AudioSource>();
     }
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
+        spellArmTimeWait = new WaitForSeconds(spellArmTime);
+        spellDurationWait = new WaitForSeconds(spellDuration);
         StartCoroutine(Cast());
     }
 
-    IEnumerator Cast() {
-        this.fireField = Instantiate(this.projectilePrefab, this.transform.position, Quaternion.identity);
-        this.fireField.transform.SetParent(this.gameObject.transform);
-        this.fireField.GetComponent<FireFieldProjectile>().SetParticleEmission(false);
+    private IEnumerator Cast() {
+        fireField = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
+        fireField.transform.SetParent(gameObject.transform);
+        fireField.GetComponent<FireFieldProjectile>().SetParticleEmission(false);
 
         PlaySoundEffect(chargeSfx);
 
-        yield return new WaitForSeconds(this.spellArmTime);
-        
-        Detonate();
-        
-        yield return new WaitForSeconds(this.spellDuration);
+        yield return spellArmTimeWait;
 
-        Destroy(this.gameObject);
+        Detonate();
+
+        yield return spellDurationWait;
+
+        Destroy(gameObject);
     }
 
-    void Detonate() {
-        Renderer r = this.fireField.GetComponent<Renderer>();
-        Destroy(this.inidicator);
+    private void Detonate() {
+        Renderer r = fireField.GetComponent<Renderer>();
+        Destroy(inidicator);
         PlaySoundEffect(detonateSfx);
-        CapsuleCollider collider = this.fireField.GetComponent<CapsuleCollider>();
-        this.fireField.GetComponent<FireFieldProjectile>().SetParticleEmission(true);
+        CapsuleCollider collider = fireField.GetComponent<CapsuleCollider>();
+        fireField.GetComponent<FireFieldProjectile>().SetParticleEmission(true);
         collider.enabled = true;
     }
 
     // Audio ------------------------------------------
 
-    bool IsAudioValid(SoundFile soundFile) {
+    private bool IsAudioValid(SoundFile soundFile) {
         if (audioSource == null || soundFile == null) {
             return false;
         }
@@ -59,14 +62,14 @@ public class spell_FireField : MonoBehaviour
         return true;
     }
 
-    void SetAudioPitch(SoundFile soundFile) {
+    private void SetAudioPitch(SoundFile soundFile) {
         audioSource.pitch = 1f;
         if (soundFile.randomizePitch) {
             audioSource.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
         }
     }
 
-    void PlaySoundEffect(SoundFile soundFile) {
+    private void PlaySoundEffect(SoundFile soundFile) {
         if (!IsAudioValid(soundFile)) {
             return;
         }

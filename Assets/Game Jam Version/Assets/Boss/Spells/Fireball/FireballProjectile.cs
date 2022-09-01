@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// TODO: Refactor this; It can be abstracted along with TestBullet into a base projectile class
 public class FireballProjectile : MonoBehaviour
 {
     [SerializeField] int bulletDamage = 1;
