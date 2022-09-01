@@ -503,23 +503,17 @@ public class PlayerController : MonoBehaviour
         // 1. Move the player
         transform.position += moveDirection.normalized * moveSpeed * Time.fixedDeltaTime;
 
-        // 2. Bind the player on X axis
-        if (transform.position.x > platform.transform.position.x + platformBoundsX) {
-            transform.position = new Vector3(platform.transform.position.x + platformBoundsX, transform.position.y, transform.position.z);
-        }
+        // Clamp X-axis movement values
+        float xMinBound = platform.transform.position.x - platformBoundsX;
+        float xMaxBound = platform.transform.position.x + platformBoundsX;
+        float clampedX = Mathf.Clamp(transform.position.x, xMinBound, xMaxBound);
 
-        if (transform.position.x < platform.transform.position.x - platformBoundsX) {
-            transform.position = new Vector3(platform.transform.position.x - platformBoundsX, transform.position.y, transform.position.z);
-        }
+        // Clamp Z-axis movement values
+        float zMinBound = platform.transform.position.z - platformBoundsZ;
+        float zMaxBound = platform.transform.position.z + platformBoundsZ;
+        float clampedZ = Mathf.Clamp(transform.position.z, zMinBound, zMaxBound);
 
-        // 3. Bind the player on Z axis
-        if (transform.position.z > platform.transform.position.z + platformBoundsZ) {
-            transform.position = new Vector3(transform.position.x, transform.position.y, platform.transform.position.z + platformBoundsZ);
-        }
-
-        if (transform.position.z < platform.transform.position.z - platformBoundsZ) {
-            transform.position = new Vector3(transform.position.x, transform.position.y, platform.transform.position.z - platformBoundsZ);
-        }
+        transform.position = new Vector3(clampedX, transform.position.y, clampedZ);
     }
 
     public void Die() {
