@@ -5,19 +5,19 @@ using UnityEngine.UI;
 
 public class CameraHolder : MonoBehaviour
 {
-    
     [SerializeField] protected Camera cam;
     [SerializeField] protected Image flashOverlay;
 
+    private void Awake()
+    {
+        cam = cam ? cam : Camera.main;
+    }
+
     public void CameraShake(float duration, float magnitude) {
-        if (cam != null) {
-            StartCoroutine(ShakeForDuration(duration, magnitude));
-        }
+        StartCoroutine(ShakeForDuration(duration, magnitude));
     }
 
     protected IEnumerator ShakeForDuration(float duration, float magnitude) {
-        Quaternion og = cam.transform.localRotation;
-
         while (duration >= 0.0f) {
             float x = Random.Range(-1f, 1f) * magnitude;
             float y = Random.Range(-1f, 1f) * magnitude;
@@ -59,9 +59,5 @@ public class CameraHolder : MonoBehaviour
             flashOverlay.color = newColor;
             yield return new WaitForEndOfFrame();
         }
-        // wh
     }
-
-    
-
 }
