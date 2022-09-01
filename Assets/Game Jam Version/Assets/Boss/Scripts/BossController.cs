@@ -4,35 +4,35 @@ using UnityEngine;
 
 public class BossController : MonoBehaviour
 {
-    [SerializeField] Transform player;
-    [SerializeField] Transform boss;
+    [SerializeField] private Transform player;
+    [SerializeField] private Transform boss;
     [SerializeField] protected Animator animator;
     [SerializeField] protected HealthTracker bossHealth;
 
     [Header("Missile Attacks")]
-    [SerializeField] GameObject magicMissile;
-    [SerializeField] GameObject vfx_missileWindup;
-    [SerializeField] GameObject vfx_missileCastObject;
+    [SerializeField] private GameObject magicMissile;
+    [SerializeField] private GameObject vfx_missileWindup;
+    [SerializeField] private GameObject vfx_missileCastObject;
 
     [Header("Lightning Attacks")]
-    [SerializeField] GameObject chainLightning;
-    [SerializeField] GameObject vfx_lightningWindup;
-    [SerializeField] GameObject vfx_lightningCastObject;
+    [SerializeField] private GameObject chainLightning;
+    [SerializeField] private GameObject vfx_lightningWindup;
+    [SerializeField] private GameObject vfx_lightningCastObject;
 
     [Header("Purple Attacks")]
-    [SerializeField] GameObject lariatBurst;
-    [SerializeField] GameObject vfx_lariatWindup;
-    [SerializeField] GameObject vfx_lariatCast;
-    [SerializeField] GameObject vfx_lariatCastObject;
+    [SerializeField] private GameObject lariatBurst;
+    [SerializeField] private GameObject vfx_lariatWindup;
+    [SerializeField] private GameObject vfx_lariatCast;
+    [SerializeField] private GameObject vfx_lariatCastObject;
 
     [Header("Ice Attacks")]
-    [SerializeField] GameObject iceShard;
-    [SerializeField] GameObject vfx_iceShardWindup;
-    [SerializeField] GameObject vfx_iceShardCastObject;
-    [SerializeField] GameObject vfx_iceShardCast;
+    [SerializeField] private GameObject iceShard;
+    [SerializeField] private GameObject vfx_iceShardWindup;
+    [SerializeField] private GameObject vfx_iceShardCastObject;
+    [SerializeField] private GameObject vfx_iceShardCast;
  
     [Header("Cast Sequences")]
-    [SerializeField] List<SpellSequence> castSequences;
+    [SerializeField] private List<SpellSequence> castSequences;
 
     [Header("Telegraph Configs")]
     [SerializeField] protected GameObject fancyCastTrail;
@@ -40,19 +40,19 @@ public class BossController : MonoBehaviour
     
     [Header("Config Fields")]
     [SerializeField] LayerMask bossTargets;
-    // [SerializeField] float rotationSpeed;
-    float rotationSpeed;
-    [SerializeField] float minRotationSpeed;
-    [SerializeField] float maxRotationSpeed;
-    [SerializeField] float firingInterval;
-    [SerializeField] bool canFire = true;
 
+    [SerializeField] private float minRotationSpeed;
+    [SerializeField] private float maxRotationSpeed;
+    [SerializeField] private float firingInterval;
+    [SerializeField] private bool canFire = true;
+
+    private float rotationSpeed;
     protected bool autoPhase = false;
-    bool clockwise = true;
-    float yRotation = 0;
-    SpellController spellController;
+    private bool clockwise = true;
+    private float yRotation = 0;
+    private float currentPhaseTime = 10;
 
-    float currentPhaseTime = 10;
+    private SpellController spellController;
 
     [Header("Boss Audio")]
     [SerializeField] private SoundFile autoAttackChargeSfx;
@@ -62,15 +62,55 @@ public class BossController : MonoBehaviour
     [SerializeField] private SoundFile lightningFireSfx;
     private AudioSource bossAudio;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        this.spellController = GetComponent<SpellController>();
-        this.rotationSpeed = this.minRotationSpeed;
-        bossAudio = this.GetComponent<AudioSource>();
+    #region UnityFunctions
 
+    private void Awake()
+    {
+        spellController = GetComponent<SpellController>();
+        bossAudio = GetComponent<AudioSource>();
+    }
+
+    private void Start()
+    {
+        rotationSpeed = minRotationSpeed;
         StartCoroutine(ShortDelayBeforeEncounter());
     }
+
+    private void FixedUpdate()
+    {
+        currentPhaseTime -= Time.fixedDeltaTime;
+        if (currentPhaseTime <= 0)
+        {
+            ChangePhase();
+        }
+
+        if (bossHealth.HealthPercentage <= 0f)
+        {
+            Die();
+        }
+
+        if (autoPhase)
+        {
+            float diff = Time.deltaTime * rotationSpeed;
+            if (clockwise)
+            {
+                yRotation = (yRotation + diff) % 360;
+            }
+            else
+            {
+                yRotation = (yRotation - diff) % 360;
+            }
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(0, yRotation, 0), 0.03f);
+        }
+        else
+        {
+            // SLERP DAT QUATERNION
+            yRotation = 0;
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(0, 0, 0), 0.01f);
+        }
+    }
+
+    #endregion
 
     protected IEnumerator ShortDelayBeforeEncounter() {
         if (UI_TutorialOnFirstPlay.Instance.FirstPlay) {
@@ -79,12 +119,10 @@ public class BossController : MonoBehaviour
             yield return new WaitForSeconds(2f);
         }
         
-        // EnterCastingPhase();
         EnterAutoPhase();
     }
 
     public void EnterAutoPhase() {
-
         currentPhaseTime = 10f + Random.Range(2f, 5f);
         autoPhase = true;
         
@@ -116,56 +154,24 @@ public class BossController : MonoBehaviour
 
     protected void ChangePhase() {
         if (autoPhase) {
-            // change to casting
             EnterCastingPhase();
         } else {
-            //  change to auto
             EnterAutoPhase();
         }
-    }
-
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-
-        currentPhaseTime -= Time.fixedDeltaTime;
-        if (currentPhaseTime <= 0) {
-            ChangePhase();
-        }
-
-        if ( bossHealth.HealthPercentage <= 0f) {
-            Die();
-        }
-        
-        if (autoPhase) {
-            float diff = Time.deltaTime * this.rotationSpeed;
-            if (clockwise) {
-                this.yRotation = (this.yRotation + diff) % 360;
-            } else {
-                this.yRotation = (this.yRotation - diff) % 360;
-            }
-            this.transform.rotation = Quaternion.Slerp(this.transform.rotation, Quaternion.Euler(0, this.yRotation, 0), 0.03f);
-        } else {
-
-            // SLERP DAT QUATERNION
-            this.yRotation = 0;
-            this.transform.rotation = Quaternion.Slerp(this.transform.rotation,  Quaternion.Euler(0, 0, 0), 0.01f);
-        }
-        
     }
 
     public void Die() {
         StopAllCoroutines();
 
-        this.gameObject.SetActive(false);
+        gameObject.SetActive(false);
     }
 
     private IEnumerator RandomizeRotationSpeed() {
         while (true) {
-            float test = Random.Range(this.minRotationSpeed, this.maxRotationSpeed);
+            float test = Random.Range(minRotationSpeed, maxRotationSpeed);
             float test0 = Mathf.Floor(test);
 
-            this.rotationSpeed = test0;
+            rotationSpeed = test0;
 
             yield return new WaitForSeconds(4f);
         }
@@ -173,71 +179,51 @@ public class BossController : MonoBehaviour
 
     private IEnumerator RandomizeRotationDirection() {
         while (true) {
-            this.clockwise = Random.Range(0f, 1f) < 0.5f;
+            clockwise = Random.Range(0f, 1f) < 0.5f;
 
             yield return new WaitForSeconds(Random.Range(1f, 3f));
         }
     }
 
     private IEnumerator FiringCoroutine() {
-        while (this.canFire) {
+        while (canFire) {
 
             animator.Play("AutoWindup");
 
-            float test = Random.Range(0f, 1f);
             int result = Random.Range(0, 4);
-            // int result = 3;
 
             switch(result) {
                 case 0: 
-                    // yield return StartCoroutine(MissileBarrage());
                     PlaySoundEffect(autoAttackChargeSfx);
                     Instantiate(vfx_missileWindup, autoWindupOrb.transform);
-                    break;
-
-                case 1:
-                    // yield return StartCoroutine(ChainLightning());
-                    PlaySoundEffect(autoAttackChargeSfx);
-                    Instantiate(vfx_lightningWindup, autoWindupOrb.transform);
-                    break;
-                
-                case 2:
-                    // yield return StartCoroutine(LariatBurst());
-                    PlaySoundEffect(autoAttackChargeSfx);
-                    Instantiate(vfx_lariatWindup, autoWindupOrb.transform);
-                    break;
-
-                case 3:
-                    // yield return StartCoroutine(IceWaveVolley());
-                    PlaySoundEffect(autoAttackChargeSfx);
-                    Instantiate(vfx_iceShardWindup, autoWindupOrb.transform);
-                    break;
-
-            }
-
-            yield return new WaitForSeconds(0.5f);
-
-            switch(result) {
-                case 0:
+                    yield return new WaitForSeconds(0.5f);
                     yield return StartCoroutine(MissileBarrage());
                     break;
 
                 case 1:
+                    PlaySoundEffect(autoAttackChargeSfx);
+                    Instantiate(vfx_lightningWindup, autoWindupOrb.transform);
+                    yield return new WaitForSeconds(0.5f);
                     yield return StartCoroutine(ChainLightning());
                     break;
                 
                 case 2:
+                    PlaySoundEffect(autoAttackChargeSfx);
+                    Instantiate(vfx_lariatWindup, autoWindupOrb.transform);
+                    yield return new WaitForSeconds(0.5f);
                     yield return StartCoroutine(LariatBurst());
                     break;
 
                 case 3:
+                    PlaySoundEffect(autoAttackChargeSfx);
+                    Instantiate(vfx_iceShardWindup, autoWindupOrb.transform);
+                    yield return new WaitForSeconds(0.5f);
                     yield return StartCoroutine(IceWaveVolley());
                     break;
-
             }
 
-            // Fire();
-            // yield return new WaitForSeconds(this.firingInterval);
+            StartCoroutine(BoolTrigger("ExitAuto"));
+            yield return new WaitForSeconds(firingInterval);
         }
     }
 
@@ -250,12 +236,11 @@ public class BossController : MonoBehaviour
     }
 
     private void Fire(GameObject projectile, Vector3 positionOffset, Vector3 rotationOffset, float deviation = 0) {
-        Vector3 aimVector = (this.player.position - this.boss.position).normalized;
+        Vector3 aimVector = (player.position - boss.position).normalized;
         aimVector.y = 0;
-        Vector3 spawnLocation = ( this.boss.position + positionOffset) + (aimVector * 1);
+        Vector3 spawnLocation = ( boss.position + positionOffset) + (aimVector * 1);
 
         TestBullet newBullet = Instantiate(projectile, spawnLocation, Quaternion.identity).GetComponent<TestBullet>();
-        // newBullet.transform.rotation = Quaternion.FromToRotation(newBullet.transform.rotation, Quaternion.Euler())
         newBullet.SetTargetLayer(bossTargets);
 
         // Random deviation
@@ -267,56 +252,55 @@ public class BossController : MonoBehaviour
     }
 
     private IEnumerator IceWaveVolley() {
+        WaitForSeconds volleyInterval = new WaitForSeconds(1f);
+
         vfx_iceShardCastObject.SetActive(true);
-        for (int i = 0; i < 4; i += 1) {
+        for (int i = 0; i < 4; i++) {
             PlaySoundEffect(iceWaveFireSfx);
             Instantiate(vfx_iceShardCast, autoWindupOrb.transform);
             for (int j = 0; j < 40; j += 1) {
                 Fire(iceShard, Vector3.zero, Vector3.zero, 0.8f);
             }
-            yield return new WaitForSeconds(1f);
+            yield return volleyInterval;
         }
-
         vfx_iceShardCastObject.SetActive(false);
-        StartCoroutine(BoolTrigger("ExitAuto"));
-        yield return new WaitForSeconds(this.firingInterval);
     }
 
     private IEnumerator MissileBarrage() {
+        WaitForSeconds barrageInterval = new WaitForSeconds(0.08f);
+
         vfx_missileCastObject.SetActive(true);
-        for (int i = 0; i < 60; i += 1) {
+        for (int i = 0; i < 60; i++) {
             Fire(magicMissile, Vector3.zero, Vector3.zero, 0.8f);
             PlaySoundEffect(missileBarrageFireSfx);
-            yield return new WaitForSeconds(0.08f);
+            yield return barrageInterval;
         }
-        StartCoroutine(BoolTrigger("ExitAuto"));
         vfx_missileCastObject.SetActive(false);
-        yield return new WaitForSeconds(this.firingInterval);
     }
 
     private IEnumerator LariatBurst() {
+        WaitForSeconds lariatInterval = new WaitForSeconds(1f);
+
         vfx_lariatCastObject.SetActive(true);
-        for (int i = 0; i < 5; i += 1) {
+        for (int i = 0; i < 5; i++) {
             Instantiate(vfx_lariatCast, autoWindupOrb.transform);
             Fire(lariatBurst, Vector3.zero, Vector3.zero);
             PlaySoundEffect(lariatFireSfx);
-            yield return new WaitForSeconds(1f);
+            yield return lariatInterval;
         }
         vfx_lariatCastObject.SetActive(false);
-        StartCoroutine(BoolTrigger("ExitAuto"));
-        yield return new WaitForSeconds(this.firingInterval);
     }
 
     private IEnumerator ChainLightning() {
+        WaitForSeconds lightningInterval = new WaitForSeconds(0.05f);
+
         vfx_lightningCastObject.SetActive(true);
-        for (int i = 0; i < 200; i += 1) {
+        for (int i = 0; i < 200; i++) {
             Fire(chainLightning, new Vector3(3, 1, 0), Vector3.zero);
             PlaySoundEffect(lightningFireSfx);
-            yield return new WaitForSeconds(0.05f);
+            yield return lightningInterval;
         }
         vfx_lightningCastObject.SetActive(false);
-        StartCoroutine(BoolTrigger("ExitAuto"));
-        yield return new WaitForSeconds(this.firingInterval);
     }
 
     private IEnumerator CastingCoroutine() {
@@ -334,16 +318,14 @@ public class BossController : MonoBehaviour
 
             if (sequence.SpellID[tally] < 100) {
                 // Cast FireBall Volley
-                this.spellController.CastFireball(sequence.SpellID[tally]);
+                spellController.CastFireball(sequence.SpellID[tally]);
 
             } else if ( sequence.SpellID[tally] >= 100 && sequence.SpellID[tally] < 200) {
                 // Cast Fire Field
-                this.spellController.CastFireField(player.position.x, player.position.z);
+                spellController.CastFireField(player.position.x, player.position.z);
             }
 
-            
             yield return new WaitForSeconds(sequence.Delays[tally]);
-
         }
 
         ChangePhase();
@@ -351,7 +333,7 @@ public class BossController : MonoBehaviour
 
     // Boss Audio ------------------------------------------
 
-    bool IsAudioValid(SoundFile soundFile) {
+    private bool IsAudioValid(SoundFile soundFile) {
         if (bossAudio == null || soundFile == null) {
             return false;
         }
@@ -359,14 +341,14 @@ public class BossController : MonoBehaviour
         return true;
     }
 
-    void SetBossAudioPitch(SoundFile soundFile) {
+    private void SetBossAudioPitch(SoundFile soundFile) {
         bossAudio.pitch = 1f;
         if (soundFile.randomizePitch) {
             bossAudio.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
         }
     }
 
-    void PlaySoundEffect(SoundFile soundFile) {
+    private void PlaySoundEffect(SoundFile soundFile) {
         if (!IsAudioValid(soundFile)) {
             return;
         }

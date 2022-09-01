@@ -1,21 +1,22 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class spell_Fireball : MonoBehaviour
 {
-    [SerializeField] GameObject projectilePrefab;
-    [SerializeField] float projectileSpeed;
-    [SerializeField] float spellDuration;
+    [SerializeField] private GameObject projectilePrefab;
+    [SerializeField] private float projectileSpeed;
+    [SerializeField] private float spellDuration;
     [SerializeField] private SoundFile fireballSfx;
     private AudioSource audioSource;
 
-    Transform platform;
+    private readonly Vector3 Left = Vector3.left;
+    private readonly Vector3 Right = Vector3.right;
+    private readonly Vector3 Up = Vector3.forward;
+    private readonly Vector3 Down = Vector3.back;
 
-    enum Side {Top, Bottom, Left, Right};
-
-    void Awake() {
-        audioSource = this.GetComponent<AudioSource>();
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
     }
 
     public void Cast(int pattern)
@@ -23,8 +24,17 @@ public class spell_Fireball : MonoBehaviour
         StartCoroutine(CastCoroutine(pattern));
     }
 
-    public IEnumerator CastCoroutine(int pattern) {
-        switch (pattern) {
+    // TODO: This is a code smell that can probably be refactored.
+    // Idea: spawn invisbile bullets that have the spawning behaviour on them.
+    // Have the spell list spawn these bullets instead of just passing an ID.
+    // ID spawns different spell "roots" that define the spawning behaviour of each volley
+    // rather than picking a method from this switch case.
+    //
+    // basically a bullet with a bullet manager on it that spawns more bullets
+    public IEnumerator CastCoroutine(int pattern)
+    {
+        switch (pattern)
+        {
             case 0:
                 TopLeftToRight();
                 break;
@@ -68,206 +78,213 @@ public class spell_Fireball : MonoBehaviour
                 StartCoroutine(TopToBottomRightToLeft());
                 break;
         }
-        
+
         PlaySoundEffect(fireballSfx);
 
-        yield return new WaitForSeconds(this.spellDuration);
-        Destroy(this.gameObject);
+        yield return new WaitForSeconds(spellDuration);
+        Destroy(gameObject);
     }
 
-    public Vector3 CreateDirectionVector(int spawnSide) {
-        switch (spawnSide) {
-            case 0:
-                return new Vector3(0, 0, -1);
-            case 1:
-                return new Vector3(0, 0, 1);
-            case 2:
-                return new Vector3(1, 0, 0);
-            case 3:
-                return new Vector3(-1, 0, 0);
-            default:
-                return new Vector3(0, 0, -1);
-        }
-    }
-
-    Vector3 SetLocation(int spawnSide) {
-        float x = 0;
-        float z = 0;
-
-        switch (spawnSide) {
-            case 0:
-                x = Random.Range(this.platform.transform.position.x - 9f, this.platform.transform.position.x + 9f);
-                z = 15f;
-                break;
-            case 1:
-                x = Random.Range(this.platform.transform.position.x - 9f, this.platform.transform.position.x + 9f);
-                z = -15f;
-                break;
-            case 2:
-                x = -15f;
-                z = Random.Range(this.platform.transform.position.z - 6.5f, this.platform.transform.position.z + 6.5f);
-                break;
-            case 3:
-                x = 15f;
-                z = Random.Range(this.platform.transform.position.z - 6.5f, this.platform.transform.position.z + 6.5f);
-                break;
-        }
-
+    private Vector3 CreateSpawnVector(float x, float z)
+    {
         return new Vector3(x, 1f, z);
     }
 
-    Vector3 CreateSpawnVector(float x, float z) {
-        return new Vector3(x, 1f, z);
-    }
+    private void CreateProjectile(Vector3 origin, Vector3 direction)
+    {
+        GameObject go = Instantiate(projectilePrefab, origin, Quaternion.identity);
 
-    void CreateProjectile(Vector3 location, int direction) {
-        GameObject go = Instantiate(this.projectilePrefab, location, Quaternion.identity);
-
-        go.transform.SetParent(this.gameObject.transform);
+        go.transform.SetParent(gameObject.transform);
 
         FireballProjectile fireball = go.GetComponent<FireballProjectile>();
 
-        fireball.SetDirection(CreateDirectionVector(direction));
-        fireball.SetSpeed(this.projectileSpeed);
+        fireball.SetDirection(direction);
+        fireball.SetSpeed(projectileSpeed);
     }
 
     // pattern 0
-    void TopLeftToRight() {
-        for (int i = 0; i < 5; i++) {
+    private void TopLeftToRight()
+    {
+        for (int i = 0; i < 5; i++)
+        {
             Vector3 location = CreateSpawnVector(-15f, 6.5f - (i * 1.35f));
-            CreateProjectile(location, 2);
+            CreateProjectile(location, Right);
         }
     }
 
     // pattern 1
-    void TopRightToLeft() {
-        for (int i = 0; i < 5; i++) {
+    private void TopRightToLeft()
+    {
+        for (int i = 0; i < 5; i++)
+        {
             Vector3 location = CreateSpawnVector(15f, 6.5f - (i * 1.35f));
-            CreateProjectile(location, 3);
+            CreateProjectile(location, Left);
         }
     }
 
     // pattern 2
-    void BottomLeftToRight() {
-        for (int i = 0; i < 5; i++) {
+    private void BottomLeftToRight()
+    {
+        for (int i = 0; i < 5; i++)
+        {
             Vector3 location = CreateSpawnVector(-15, -6.5f + (i * 1.35f));
-            CreateProjectile(location, 2);
+            CreateProjectile(location, Right);
         }
     }
 
     // pattern 3
-    void BottomRightToLeft() {
-        for (int i = 0; i < 5; i++) {
+    private void BottomRightToLeft()
+    {
+        for (int i = 0; i < 5; i++)
+        {
             Vector3 location = CreateSpawnVector(15, -6.5f + (i * 1.35f));
-            CreateProjectile(location, 3);
+            CreateProjectile(location, Left);
         }
     }
 
     // pattern 4
-    void LeftTopToBottom(){
-        for (int i = 0; i < 7; i++) {
+    private void LeftTopToBottom()
+    {
+        for (int i = 0; i < 7; i++)
+        {
             Vector3 location = CreateSpawnVector(-9f + (i * 1.38f), 15f);
-            CreateProjectile(location, 0);
+            CreateProjectile(location, Down);
         }
     }
 
     // pattern 5
-    void RightTopToBottom(){
-        for (int i = 0; i < 7; i++) {
+    private void RightTopToBottom()
+    {
+        for (int i = 0; i < 7; i++)
+        {
             Vector3 location = CreateSpawnVector(9f - (i * 1.38f), 15f);
-            CreateProjectile(location, 0);
+            CreateProjectile(location, Down);
         }
     }
 
     // pattern 6
-    void LeftBottomToTop(){
-        for (int i = 0; i < 7; i++) {
+    private void LeftBottomToTop()
+    {
+        for (int i = 0; i < 7; i++)
+        {
             Vector3 location = CreateSpawnVector(-9f + (i * 1.38f), -15f);
-            CreateProjectile(location, 1);
+            CreateProjectile(location, Up);
         }
     }
 
     // pattern 7
-    void RightBottomToTop(){
-        for (int i = 0; i < 7; i++) {
+    private void RightBottomToTop()
+    {
+        for (int i = 0; i < 7; i++)
+        {
             Vector3 location = CreateSpawnVector(9f - (i * 1.38f), -15f);
-            CreateProjectile(location, 1);
+            CreateProjectile(location, Up);
         }
     }
 
     // pattern 8
-    IEnumerator LeftToRightTopToBottom() {
-        for (int i = 0; i < 10; i++) {
+    private IEnumerator LeftToRightTopToBottom()
+    {
+        WaitForSeconds interval = new WaitForSeconds(0.17f);
+
+        for (int i = 0; i < 10; i++)
+        {
             Vector3 location = CreateSpawnVector(-15f, 6.5f - (i * 1.4f));
-            CreateProjectile(location, 2);
-            yield return new WaitForSeconds(0.17f);
+            CreateProjectile(location, Right);
+            yield return interval;
         }
     }
 
     // pattern 9
-    IEnumerator LeftToRightBottomToTop() {
-        for (int i = 0; i < 10; i++) {
+    private IEnumerator LeftToRightBottomToTop()
+    {
+        WaitForSeconds interval = new WaitForSeconds(0.17f);
+
+        for (int i = 0; i < 10; i++)
+        {
             Vector3 location = CreateSpawnVector(-15, -6.5f + (i * 1.4f));
-            CreateProjectile(location, 2);
-            yield return new WaitForSeconds(0.17f);
+            CreateProjectile(location, Right);
+            yield return interval;
         }
     }
 
     // pattern 10
-    IEnumerator RightToLeftTopToBottom() {
-        for (int i = 0; i < 10; i++) {
+    private IEnumerator RightToLeftTopToBottom()
+    {
+        WaitForSeconds interval = new WaitForSeconds(0.17f);
+
+        for (int i = 0; i < 10; i++)
+        {
             Vector3 location = CreateSpawnVector(9, 6.5f - (i * 1.4f));
-            CreateProjectile(location, 3);
-            yield return new WaitForSeconds(0.17f);
+            CreateProjectile(location, Left);
+            yield return interval;
         }
     }
 
     // pattern 11
-    IEnumerator RightToLeftBottomToTop() {
-        for (int i = 0; i < 10; i++) {
+    private IEnumerator RightToLeftBottomToTop()
+    {
+        WaitForSeconds interval = new WaitForSeconds(0.17f);
+
+        for (int i = 0; i < 10; i++)
+        {
             Vector3 location = CreateSpawnVector(15, -6.5f + (i * 1.4f));
-            CreateProjectile(location, 3);
-            yield return new WaitForSeconds(0.17f);
+            CreateProjectile(location, Left);
+            yield return interval;
         }
     }
 
     // pattern 12
-    IEnumerator TopToBottomLeftToRight() {
-        for (int i = 0; i < 14; i++) {
+    private IEnumerator TopToBottomLeftToRight()
+    {
+        WaitForSeconds interval = new WaitForSeconds(0.15f);
+
+        for (int i = 0; i < 14; i++)
+        {
             Vector3 location = CreateSpawnVector(-9f + (i * 1.4f), 15f);
-            CreateProjectile(location, 0);
-            yield return new WaitForSeconds(0.15f);
+            CreateProjectile(location, Down);
+            yield return interval;
         }
     }
 
     // pattern 13
-    IEnumerator TopToBottomRightToLeft() {
-        for (int i = 0; i < 14; i++) {
+    private IEnumerator TopToBottomRightToLeft()
+    {
+        WaitForSeconds interval = new WaitForSeconds(0.15f);
+
+        for (int i = 0; i < 14; i++)
+        {
             Vector3 location = CreateSpawnVector(9f - (i * 1.4f), 15f);
-            CreateProjectile(location, 0);
-            yield return new WaitForSeconds(0.15f);
+            CreateProjectile(location, Down);
+            yield return interval;
         }
     }
 
     // Audio ------------------------------------------
 
-    bool IsAudioValid(SoundFile soundFile) {
-        if (audioSource == null || soundFile == null) {
+    private bool IsAudioValid(SoundFile soundFile)
+    {
+        if (audioSource == null || soundFile == null)
+        {
             return false;
         }
 
         return true;
     }
 
-    void SetAudioPitch(SoundFile soundFile) {
+    private void SetAudioPitch(SoundFile soundFile)
+    {
         audioSource.pitch = 1f;
-        if (soundFile.randomizePitch) {
+        if (soundFile.randomizePitch)
+        {
             audioSource.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
         }
     }
 
-    void PlaySoundEffect(SoundFile soundFile) {
-        if (!IsAudioValid(soundFile)) {
+    private void PlaySoundEffect(SoundFile soundFile)
+    {
+        if (!IsAudioValid(soundFile))
+        {
             return;
         }
 
