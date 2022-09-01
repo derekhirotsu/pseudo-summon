@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
-{  
+{
     private Camera cam;
     private CapsuleCollider hitBox;
     private Animator animator;
@@ -46,27 +46,36 @@ public class PlayerController : MonoBehaviour
     protected float busterCooldown = 0;
     protected bool BusterOnCooldown { get { return busterCooldown > 0; } }
     protected int currentHitCharge = 0;
-    protected void AddToCharge() {
-        if (currentHitCharge < hitsToCharge && !BusterOnCooldown) {
+    protected void AddToCharge()
+    {
+        if (currentHitCharge < hitsToCharge && !BusterOnCooldown)
+        {
             currentHitCharge++;
-            if (currentHitCharge == hitsToCharge) {
+            if (currentHitCharge == hitsToCharge)
+            {
                 PlaySoundEffect(playerSecondaryReadySfx);
             }
         }
     }
 
-    public float BusterFillPercent {
-        get {
-            if (!BusterOnCooldown) {
-                return (float) (hitsToCharge - currentHitCharge) / hitsToCharge;
-            } else { 
-                return (float) (windDownTime - busterCooldown) / windDownTime;
+    public float BusterFillPercent
+    {
+        get
+        {
+            if (!BusterOnCooldown)
+            {
+                return (float)(hitsToCharge - currentHitCharge) / hitsToCharge;
             }
-            
+            else
+            {
+                return (float)(windDownTime - busterCooldown) / windDownTime;
+            }
+
         }
     }
 
-    public bool BusterCharged() {
+    public bool BusterCharged()
+    {
         return currentHitCharge == hitsToCharge;
     }
 
@@ -75,7 +84,8 @@ public class PlayerController : MonoBehaviour
     protected IEnumerator unpauseCoroutine;
     protected IEnumerator invincibilityCoroutine;
     protected IEnumerator hitstopCoroutine;
-    protected IEnumerator HitStop(float duration) {
+    protected IEnumerator HitStop(float duration)
+    {
         Time.timeScale = 0f;
 
         yield return new WaitForSecondsRealtime(duration);
@@ -92,7 +102,6 @@ public class PlayerController : MonoBehaviour
     protected Vector3 movementVector;
     protected Vector3 aimVector;
 
-    private bool fireSide = false;
     private bool isPaused = false;
 
     [Header("Player Audio")]
@@ -119,7 +128,8 @@ public class PlayerController : MonoBehaviour
         playerAudio = GetComponent<AudioSource>();
     }
 
-    private void Start() {
+    private void Start()
+    {
         isPaused = false;
         cam = Camera.main;
     }
@@ -132,6 +142,8 @@ public class PlayerController : MonoBehaviour
 
         if (!isPaused)
         {
+            fireCooldown -= Time.deltaTime;
+
             HandleMovementInput();
             HandleAimingInput();
             HandleFiringInput();
@@ -171,12 +183,15 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     #region HitDetection
-    void CheckPlayerHit() {
+    void CheckPlayerHit()
+    {
         // Me taking damage check
-        if (health.TookDamage(consumeTrigger:true)) {
+        if (health.TookDamage(consumeTrigger: true))
+        {
             PlaySoundEffect(playerHitSfx);
 
-            if (invincibilityCoroutine != null ) {
+            if (invincibilityCoroutine != null)
+            {
                 StopCoroutine(invincibilityCoroutine);
             }
             invincibilityCoroutine = GoInvincible(1f);
@@ -185,7 +200,8 @@ public class PlayerController : MonoBehaviour
             // Big hitstop
             camHolder.CameraShake(0.35f, 0.35f);
 
-            if (hitstopCoroutine != null) {
+            if (hitstopCoroutine != null)
+            {
                 StopCoroutine(hitstopCoroutine);
             }
 
@@ -195,23 +211,26 @@ public class PlayerController : MonoBehaviour
     }
 
     // TODO: This could be refactored to decouple player from boss.
-    void CheckBossHit() {
+    void CheckBossHit()
+    {
         // Boss taking damage check
-        if (bossHealth.TookDamage(consumeTrigger:true)) {
+        if (bossHealth.TookDamage(consumeTrigger: true))
+        {
             PlaySoundEffect(bossHitSfx);
             AddToCharge();
 
             camHolder.CameraShake(0.1f, 0.1f);
 
-            if (hitstopCoroutine != null) {
+            if (hitstopCoroutine != null)
+            {
                 StopCoroutine(hitstopCoroutine);
             }
 
             hitstopCoroutine = HitStop(0.03f);
             StartCoroutine(hitstopCoroutine);
-            
 
-            UI_ScoreTracker.Instance.AddScore(200, multiply:true);
+
+            UI_ScoreTracker.Instance.AddScore(200, multiply: true);
         }
     }
 
@@ -219,15 +238,18 @@ public class PlayerController : MonoBehaviour
 
     #region InputHandling
 
-    void HandleMovementInput() {
+    void HandleMovementInput()
+    {
         Vector3 rawVec = Vector3.zero;
         rawVec.x = Input.GetAxisRaw("Horizontal");
         rawVec.z = Input.GetAxisRaw("Vertical");
         movementVector = rawVec;
     }
 
-    void HandleAimingInput() {
-        if (hitstopCoroutine != null) {
+    void HandleAimingInput()
+    {
+        if (hitstopCoroutine != null)
+        {
             return;
         }
 
@@ -237,84 +259,102 @@ public class PlayerController : MonoBehaviour
         aimVector = new Vector3(playerToMouseVector.x, 0, playerToMouseVector.y);
         transform.LookAt(new Vector3(transform.position.x + aimVector.x, transform.position.y, transform.position.z + aimVector.z));
 
-        Debug.DrawRay(transform.position, aimVector * 2f, Color.blue);
+        //Debug.DrawRay(transform.position, aimVector * 2f, Color.blue);
     }
 
-    void HandleFiringInput() {
-        fireCooldown -= Time.deltaTime;
-
-        if (UI_TutorialOnFirstPlay.Instance.FirstPlay) {
-            return;
-        }
-
-        if (Input.GetButtonDown("Fire1") && !rolling && !busterInProgress) {
-
-            shootCoroutine = Shoot();
-            StartCoroutine(shootCoroutine);
-
-        }
-    }
-
-    void HandleBusterInput() {
-        if (UI_TutorialOnFirstPlay.Instance.FirstPlay) {
-            return;
-        }
-
-        if (Input.GetButtonDown("Fire2") && !rolling && BusterCharged() && !busterInProgress) {
-
-            
-            if (shootCoroutine != null) {
-                StopCoroutine(shootCoroutine);
-            }
-
-            shootCoroutine = Buster();
-            StartCoroutine(shootCoroutine);
-
-        }
-    }
-
-    void HandleRollInput() {
-        if (Input.GetButtonDown("Roll") && rollCoroutine == null && canStillRollOutOfBuster) {
-
-            // Invincibility rolls shouldn't interrupt damage rolls
-            if (invincibilityCoroutine != null) {
-                StopCoroutine(invincibilityCoroutine);
-            }
-            
-            invincibilityCoroutine = GoInvincible(rollIFrameDuration);
-            StartCoroutine(invincibilityCoroutine);
-
-            if (busterInProgress) {
-                busterChargeVFX.SetActive(false);
-                busterInProgress = false;
-                playerAudio.Stop();
-            }
-
-            if (shootCoroutine != null) {
-                StopCoroutine(shootCoroutine);
-                shootCoroutine = null;
-            }
-
-            rollCoroutine = Roll();
-            StartCoroutine(rollCoroutine);
-        }
-    }
-
-    private void HandlePauseInput() {
+    void HandleFiringInput()
+    {
         if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
         {
             return;
         }
 
-        if (Input.GetButtonDown("Pause")) {
+        if (Input.GetButtonDown("Fire1") && !rolling && !busterInProgress)
+        {
 
-            if (hitstopCoroutine != null) {
+            shootCoroutine = Shoot();
+            StartCoroutine(shootCoroutine);
+        }
+    }
+
+    void HandleBusterInput()
+    {
+        if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
+        {
+            return;
+        }
+
+        if (Input.GetButtonDown("Fire2") && !rolling && BusterCharged() && !busterInProgress)
+        {
+            if (shootCoroutine != null)
+            {
+                StopCoroutine(shootCoroutine);
+            }
+
+            shootCoroutine = Buster();
+            StartCoroutine(shootCoroutine);
+        }
+    }
+
+    void HandleRollInput()
+    {
+        if (Input.GetButtonDown("Roll") && rollCoroutine == null && canStillRollOutOfBuster)
+        {
+            // Invincibility rolls shouldn't interrupt damage rolls
+            if (invincibilityCoroutine != null)
+            {
+                StopCoroutine(invincibilityCoroutine);
+            }
+
+            invincibilityCoroutine = GoInvincible(rollIFrameDuration);
+            StartCoroutine(invincibilityCoroutine);
+
+            if (busterInProgress)
+            {
+                busterChargeVFX.SetActive(false);
+                busterInProgress = false;
+                playerAudio.Stop();
+            }
+
+            if (shootCoroutine != null)
+            {
+                StopCoroutine(shootCoroutine);
+                shootCoroutine = null;
+            }
+
+            Vector3 rollVector = movementVector;
+
+            if (rollVector.magnitude <= Mathf.Epsilon)
+            {
+                rollVector = aimVector;
+            }
+
+            rollCoroutine = Roll(rollVector);
+            StartCoroutine(rollCoroutine);
+        }
+    }
+
+    private void HandlePauseInput()
+    {
+        if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
+        {
+            return;
+        }
+
+        if (Input.GetButtonDown("Pause"))
+        {
+
+            if (hitstopCoroutine != null)
+            {
                 StopCoroutine(hitstopCoroutine);
             }
 
-            if (isPaused) {
+            if (isPaused)
+            {
                 Unpause();
-            } else {
+            }
+            else
+            {
                 Pause();
             }
         }
@@ -330,7 +370,8 @@ public class PlayerController : MonoBehaviour
         UI.DisplayPauseUI();
     }
 
-    public void Unpause() {
+    public void Unpause()
+    {
         Music.instance.SetLowPassFilterEnabled(false);
         isPaused = false;
         Time.timeScale = 1f;
@@ -339,21 +380,18 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    protected IEnumerator Shoot() {
+    protected IEnumerator Shoot()
+    {
 
         speedMod = 0.5f;
 
-        while (Input.GetButton("Fire1")) {
+        while (Input.GetButton("Fire1"))
+        {
 
-            if (fireCooldown <= 0 && rollCoroutine == null) {
-                TestBullet newBullet = Instantiate(bulletPrefab, transform.position + aimVector, Quaternion.identity).GetComponent<TestBullet>();
-                newBullet.SetTargetLayer(targetLayer);
-                newBullet.SetDirection(aimVector);
-
-                // Animate
-                fireSide = !fireSide;
-                animator.SetBool("FireSide", fireSide);
-                animator.Play("Fire");
+            if (fireCooldown <= 0 && rollCoroutine == null)
+            {
+                SpawnBullet(transform.position + aimVector, aimVector);
+                AnimatePrimaryFire();
 
                 PlaySoundEffect(playerShootSfx);
                 fireCooldown = firingInterval;
@@ -364,10 +402,26 @@ public class PlayerController : MonoBehaviour
 
         shootCoroutine = null;
         speedMod = 1f;
-        
+
     }
 
-    protected IEnumerator Buster() {
+    private void SpawnBullet(Vector3 origin, Vector3 direction)
+    {
+        TestBullet newBullet = Instantiate(bulletPrefab, origin, Quaternion.identity).GetComponent<TestBullet>();
+        newBullet.SetTargetLayer(targetLayer);
+        newBullet.SetDirection(direction);
+    }
+
+    private void AnimatePrimaryFire()
+    {
+        // Toggle Left/Right firing animation.
+        animator.SetBool("FireSide", !animator.GetBool("FireSide"));
+
+        animator.Play("Fire");
+    }
+
+    protected IEnumerator Buster()
+    {
         // 1. Begin charging.
         busterInProgress = true;
         canStillRollOutOfBuster = true;
@@ -393,11 +447,12 @@ public class PlayerController : MonoBehaviour
 
         busterEffect.transform.parent = null;
         newBuster.transform.parent = null;
-        
+
         // 3. Big hitstop and hit registration
         camHolder.CameraFlash(10f);
         camHolder.CameraShake(0.8f, 1.0f);
-        if (hitstopCoroutine != null) {
+        if (hitstopCoroutine != null)
+        {
             StopCoroutine(hitstopCoroutine);
         }
         hitstopCoroutine = HitStop(0.7f);
@@ -419,15 +474,18 @@ public class PlayerController : MonoBehaviour
         speedMod = 1f;
     }
 
-    protected IEnumerator CooldownBuster() {
+    protected IEnumerator CooldownBuster()
+    {
         busterCooldown = windDownTime;
-        while (BusterOnCooldown) {
+        while (BusterOnCooldown)
+        {
             busterCooldown -= Time.fixedDeltaTime;
             yield return new WaitForFixedUpdate();
         }
     }
 
-    protected IEnumerator GoInvincible(float duration) {
+    protected IEnumerator GoInvincible(float duration)
+    {
         hitBox.enabled = false;
 
         yield return new WaitForSeconds(duration);
@@ -436,24 +494,19 @@ public class PlayerController : MonoBehaviour
         invincibilityCoroutine = null;
     }
 
-    protected IEnumerator Roll() {
+    protected IEnumerator Roll(Vector3 rollDirection)
+    {
         PlaySoundEffect(playerDodgeSfx);
-        Vector3 rollVector = movementVector;
 
-        if (rollVector.magnitude <= Mathf.Epsilon)
-        {
-            rollVector = aimVector;
-        }
-
-        GameObject dashObject = Instantiate(dashParticle, transform.position, Quaternion.LookRotation(-rollVector, Vector3.up));
+        GameObject dashObject = Instantiate(dashParticle, transform.position, Quaternion.LookRotation(-rollDirection, Vector3.up));
 
         // Set dash direction for animation
-        float dashX = transform.InverseTransformDirection(rollVector).normalized.x;
-        float dashZ = transform.InverseTransformDirection(rollVector).normalized.z;
+        float dashX = transform.InverseTransformDirection(rollDirection).normalized.x;
+        float dashZ = transform.InverseTransformDirection(rollDirection).normalized.z;
         animator.SetFloat("dashX", dashX);
         animator.SetFloat("dashZ", dashZ);
         animator.Play("Dash");
-        
+
         rolling = true;
 
         // Initial parameters
@@ -461,8 +514,9 @@ public class PlayerController : MonoBehaviour
 
         // Section of the roll in the air
         float rollInAirTimer = playerRollTime;
-        while (rollInAirTimer > 0) {
-            MovePlayerInBounds(rollVector, playerRollSpeed);
+        while (rollInAirTimer > 0)
+        {
+            MovePlayerInBounds(rollDirection, playerRollSpeed);
             rollInAirTimer -= Time.fixedDeltaTime;
 
             yield return new WaitForFixedUpdate();
@@ -474,8 +528,9 @@ public class PlayerController : MonoBehaviour
 
         // Section of the roll on the ground
         float rollOnGroundTimer = playerRollTime * 2.0f;
-        while (rollOnGroundTimer > 0) {
-            MovePlayerInBounds(rollVector, playerRollSpeed * rollOnGroundTimer);
+        while (rollOnGroundTimer > 0)
+        {
+            MovePlayerInBounds(rollDirection, playerRollSpeed * rollOnGroundTimer);
             rollOnGroundTimer -= Time.fixedDeltaTime;
 
             yield return new WaitForFixedUpdate();
@@ -484,13 +539,16 @@ public class PlayerController : MonoBehaviour
         Destroy(dashObject);
 
         rollCoroutine = null;
-        if (shootCoroutine == null) {
+        if (shootCoroutine == null)
+        {
             speedMod = 1f;
         }
     }
 
-    protected void MovePlayerInBounds(Vector3 moveDirection, float moveSpeed) {
-        if (health.HealthPercentage <= 0f) {
+    protected void MovePlayerInBounds(Vector3 moveDirection, float moveSpeed)
+    {
+        if (health.HealthPercentage <= 0f)
+        {
             return;
         }
 
@@ -516,11 +574,12 @@ public class PlayerController : MonoBehaviour
         transform.position = new Vector3(clampedX, transform.position.y, clampedZ);
     }
 
-    public void Die() {
+    public void Die()
+    {
         hitBox.enabled = false;
 
         playerAudio.Stop();
-        UI.DisplayDeathUI(won:false);
+        UI.DisplayDeathUI(won: false);
 
         enabled = false;
         gameObject.SetActive(false);
@@ -528,23 +587,29 @@ public class PlayerController : MonoBehaviour
 
     // Player Audio ------------------------------------------
 
-    private bool IsAudioValid(SoundFile soundFile) {
-        if (playerAudio == null || soundFile == null) {
+    private bool IsAudioValid(SoundFile soundFile)
+    {
+        if (playerAudio == null || soundFile == null)
+        {
             return false;
         }
 
         return true;
     }
 
-    private void SetPlayerAudioPitch(SoundFile soundFile) {
+    private void SetPlayerAudioPitch(SoundFile soundFile)
+    {
         playerAudio.pitch = 1f;
-        if (soundFile.randomizePitch) {
+        if (soundFile.randomizePitch)
+        {
             playerAudio.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
         }
     }
 
-    private void PlaySoundEffect(SoundFile soundFile) {
-        if (!IsAudioValid(soundFile)) {
+    private void PlaySoundEffect(SoundFile soundFile)
+    {
+        if (!IsAudioValid(soundFile))
+        {
             return;
         }
 
