@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53d02ac2b7f91d540852a161e9a526e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  firstPlay: 0
+  firstPlay: 1
   swapper: {fileID: 1399516124}
   countdownMenu: {fileID: 312837150}
   boundsMenu: {fileID: 815584442}
@@ -11586,7 +11586,7 @@ PrefabInstance:
       objectReference: {fileID: 7477765099212387787, guid: 0773a2f72e4c6d14e86ad059be509a2a, type: 3}
     - target: {fileID: 5607425763507169837, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
       propertyPath: hitsToCharge
-      value: 1
+      value: 35
       objectReference: {fileID: 0}
     - target: {fileID: 5607425763507169837, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
       propertyPath: windDownTime
