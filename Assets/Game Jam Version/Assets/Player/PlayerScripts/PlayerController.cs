@@ -93,11 +93,6 @@ public class PlayerController : MonoBehaviour
         Time.timeScale = 1f;
     }
 
-    [Header("Position Bounds")]
-    [SerializeField] protected Transform platform;
-    [SerializeField] protected float platformBoundsX = 9f;
-    [SerializeField] protected float platformBoundsZ = 6.5f;
-
     protected Vector3 movementVector;
     protected Vector3 aimVector;
 
@@ -117,6 +112,7 @@ public class PlayerController : MonoBehaviour
 
     private AudioProvider _audio;
     private InputProvider _input;
+    private PlayerMovement _movement;
 
     #region UnityFunctions
 
@@ -127,6 +123,7 @@ public class PlayerController : MonoBehaviour
         animator = GetComponent<Animator>();
         _audio = GetComponent<AudioProvider>();
         _input = GetComponent<InputProvider>();
+        _movement = GetComponent<PlayerMovement>();
     }
 
     private void OnEnable()
@@ -166,6 +163,7 @@ public class PlayerController : MonoBehaviour
         if (health.HealthPercentage <= 0f && bossHealth.HealthPercentage > 0f)
         {
             Die();
+            return;
         }
 
         if (bossHealth.HealthPercentage <= 0f)
@@ -175,11 +173,11 @@ public class PlayerController : MonoBehaviour
 
         if (!rolling)
         {
-            MovePlayerInBounds(movementVector, PlayerMoveSpeed);
+            _movement.Move(movementVector, PlayerMoveSpeed * Time.fixedDeltaTime);
         }
         else
         {
-            MovePlayerInBounds(movementVector, PlayerMoveSpeed * 0.3f);
+            _movement.Move(movementVector, PlayerMoveSpeed * 0.3f * Time.fixedDeltaTime);
         }
 
         if (bossHealth.CurrentHealth == 0)
@@ -323,7 +321,7 @@ public class PlayerController : MonoBehaviour
         float rollInAirTimer = playerRollTime;
         while (rollInAirTimer > 0)
         {
-            MovePlayerInBounds(rollDirection, playerRollSpeed);
+            _movement.Move(rollDirection, playerRollSpeed * Time.fixedDeltaTime);
             rollInAirTimer -= Time.fixedDeltaTime;
 
             yield return new WaitForFixedUpdate();
@@ -337,7 +335,7 @@ public class PlayerController : MonoBehaviour
         float rollOnGroundTimer = playerRollTime * 2.0f;
         while (rollOnGroundTimer > 0)
         {
-            MovePlayerInBounds(rollDirection, playerRollSpeed * rollOnGroundTimer);
+            _movement.Move(rollDirection, playerRollSpeed * rollOnGroundTimer * Time.fixedDeltaTime);
             rollOnGroundTimer -= Time.fixedDeltaTime;
 
             yield return new WaitForFixedUpdate();
@@ -568,35 +566,6 @@ public class PlayerController : MonoBehaviour
 
         hitBox.enabled = true;
         invincibilityCoroutine = null;
-    }
-
-    protected void MovePlayerInBounds(Vector3 moveDirection, float moveSpeed)
-    {
-        if (health.HealthPercentage <= 0f)
-        {
-            return;
-        }
-
-        if (platform == null)
-        {
-            Debug.LogWarning("No platform assigned! Drag our platform object to the PlayerController script!");
-            return;
-        }
-
-        // 1. Move the player
-        transform.position += moveDirection.normalized * moveSpeed * Time.fixedDeltaTime;
-
-        // Clamp X-axis movement values
-        float xMinBound = platform.transform.position.x - platformBoundsX;
-        float xMaxBound = platform.transform.position.x + platformBoundsX;
-        float clampedX = Mathf.Clamp(transform.position.x, xMinBound, xMaxBound);
-
-        // Clamp Z-axis movement values
-        float zMinBound = platform.transform.position.z - platformBoundsZ;
-        float zMaxBound = platform.transform.position.z + platformBoundsZ;
-        float clampedZ = Mathf.Clamp(transform.position.z, zMinBound, zMaxBound);
-
-        transform.position = new Vector3(clampedX, transform.position.y, clampedZ);
     }
 
     public void Die()
