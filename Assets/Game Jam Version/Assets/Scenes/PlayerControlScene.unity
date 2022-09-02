@@ -11586,7 +11586,7 @@ PrefabInstance:
       objectReference: {fileID: 7477765099212387787, guid: 0773a2f72e4c6d14e86ad059be509a2a, type: 3}
     - target: {fileID: 5607425763507169837, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
       propertyPath: hitsToCharge
-      value: 35
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5607425763507169837, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
       propertyPath: windDownTime
