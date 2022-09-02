@@ -60,14 +60,14 @@ public class BossController : MonoBehaviour
     [SerializeField] private SoundFile missileBarrageFireSfx;
     [SerializeField] private SoundFile lariatFireSfx;
     [SerializeField] private SoundFile lightningFireSfx;
-    private AudioSource bossAudio;
+    private AudioProvider _audio;
 
     #region UnityFunctions
 
     private void Awake()
     {
         spellController = GetComponent<SpellController>();
-        bossAudio = GetComponent<AudioSource>();
+        _audio = GetComponent<AudioProvider>();
     }
 
     private void Start()
@@ -194,28 +194,28 @@ public class BossController : MonoBehaviour
 
             switch(result) {
                 case 0: 
-                    PlaySoundEffect(autoAttackChargeSfx);
+                    _audio.PlaySound(autoAttackChargeSfx);
                     Instantiate(vfx_missileWindup, autoWindupOrb.transform);
                     yield return new WaitForSeconds(0.5f);
                     yield return StartCoroutine(MissileBarrage());
                     break;
 
                 case 1:
-                    PlaySoundEffect(autoAttackChargeSfx);
+                    _audio.PlaySound(autoAttackChargeSfx);
                     Instantiate(vfx_lightningWindup, autoWindupOrb.transform);
                     yield return new WaitForSeconds(0.5f);
                     yield return StartCoroutine(ChainLightning());
                     break;
                 
                 case 2:
-                    PlaySoundEffect(autoAttackChargeSfx);
+                    _audio.PlaySound(autoAttackChargeSfx);
                     Instantiate(vfx_lariatWindup, autoWindupOrb.transform);
                     yield return new WaitForSeconds(0.5f);
                     yield return StartCoroutine(LariatBurst());
                     break;
 
                 case 3:
-                    PlaySoundEffect(autoAttackChargeSfx);
+                    _audio.PlaySound(autoAttackChargeSfx);
                     Instantiate(vfx_iceShardWindup, autoWindupOrb.transform);
                     yield return new WaitForSeconds(0.5f);
                     yield return StartCoroutine(IceWaveVolley());
@@ -256,7 +256,7 @@ public class BossController : MonoBehaviour
 
         vfx_iceShardCastObject.SetActive(true);
         for (int i = 0; i < 4; i++) {
-            PlaySoundEffect(iceWaveFireSfx);
+            _audio.PlaySound(iceWaveFireSfx);
             Instantiate(vfx_iceShardCast, autoWindupOrb.transform);
             for (int j = 0; j < 40; j += 1) {
                 Fire(iceShard, Vector3.zero, Vector3.zero, 0.8f);
@@ -272,7 +272,7 @@ public class BossController : MonoBehaviour
         vfx_missileCastObject.SetActive(true);
         for (int i = 0; i < 60; i++) {
             Fire(magicMissile, Vector3.zero, Vector3.zero, 0.8f);
-            PlaySoundEffect(missileBarrageFireSfx);
+            _audio.PlaySound(missileBarrageFireSfx);
             yield return barrageInterval;
         }
         vfx_missileCastObject.SetActive(false);
@@ -285,7 +285,7 @@ public class BossController : MonoBehaviour
         for (int i = 0; i < 5; i++) {
             Instantiate(vfx_lariatCast, autoWindupOrb.transform);
             Fire(lariatBurst, Vector3.zero, Vector3.zero);
-            PlaySoundEffect(lariatFireSfx);
+            _audio.PlaySound(lariatFireSfx);
             yield return lariatInterval;
         }
         vfx_lariatCastObject.SetActive(false);
@@ -297,7 +297,7 @@ public class BossController : MonoBehaviour
         vfx_lightningCastObject.SetActive(true);
         for (int i = 0; i < 200; i++) {
             Fire(chainLightning, new Vector3(3, 1, 0), Vector3.zero);
-            PlaySoundEffect(lightningFireSfx);
+            _audio.PlaySound(lightningFireSfx);
             yield return lightningInterval;
         }
         vfx_lightningCastObject.SetActive(false);
@@ -329,31 +329,5 @@ public class BossController : MonoBehaviour
         }
 
         ChangePhase();
-    }
-
-    // Boss Audio ------------------------------------------
-
-    private bool IsAudioValid(SoundFile soundFile) {
-        if (bossAudio == null || soundFile == null) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private void SetBossAudioPitch(SoundFile soundFile) {
-        bossAudio.pitch = 1f;
-        if (soundFile.randomizePitch) {
-            bossAudio.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
-        }
-    }
-
-    private void PlaySoundEffect(SoundFile soundFile) {
-        if (!IsAudioValid(soundFile)) {
-            return;
-        }
-
-        SetBossAudioPitch(soundFile);
-        bossAudio.PlayOneShot(soundFile.audioClip, soundFile.volumeScale);
     }
 }

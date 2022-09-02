@@ -52,7 +52,7 @@ public class PlayerController : MonoBehaviour
             currentHitCharge++;
             if (currentHitCharge == hitsToCharge)
             {
-                PlaySoundEffect(playerSecondaryReadySfx);
+                _audio.PlaySound(playerSecondaryReadySfx);
             }
         }
     }
@@ -115,8 +115,7 @@ public class PlayerController : MonoBehaviour
     // player in future refactoring. See note on CheckBossHit method below.
     [SerializeField] private SoundFile bossHitSfx;
 
-    private AudioSource playerAudio;
-
+    private AudioProvider _audio;
     private InputProvider _input;
 
     #region UnityFunctions
@@ -126,7 +125,7 @@ public class PlayerController : MonoBehaviour
         health = GetComponent<HealthTracker>();
         hitBox = GetComponent<CapsuleCollider>();
         animator = GetComponent<Animator>();
-        playerAudio = GetComponent<AudioSource>();
+        _audio = GetComponent<AudioProvider>();
         _input = GetComponent<InputProvider>();
     }
 
@@ -197,7 +196,7 @@ public class PlayerController : MonoBehaviour
         // Me taking damage check
         if (health.TookDamage(consumeTrigger: true))
         {
-            PlaySoundEffect(playerHitSfx);
+            _audio.PlaySound(playerHitSfx);
 
             if (invincibilityCoroutine != null)
             {
@@ -225,7 +224,7 @@ public class PlayerController : MonoBehaviour
         // Boss taking damage check
         if (bossHealth.TookDamage(consumeTrigger: true))
         {
-            PlaySoundEffect(bossHitSfx);
+            _audio.PlaySound(bossHitSfx);
             AddToCharge();
 
             camHolder.CameraShake(0.1f, 0.1f);
@@ -287,7 +286,7 @@ public class PlayerController : MonoBehaviour
         {
             busterChargeVFX.SetActive(false);
             busterInProgress = false;
-            playerAudio.Stop();
+            _audio.StopSound();
         }
 
         if (shootCoroutine != null)
@@ -309,7 +308,7 @@ public class PlayerController : MonoBehaviour
 
     protected IEnumerator Roll(Vector3 rollDirection)
     {
-        PlaySoundEffect(playerDodgeSfx);
+        _audio.PlaySound(playerDodgeSfx);
 
         GameObject dashObject = Instantiate(dashParticle, transform.position, Quaternion.LookRotation(-rollDirection, Vector3.up));
 
@@ -411,11 +410,6 @@ public class PlayerController : MonoBehaviour
 
     private void OnPrimaryFireDown()
     {
-        if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
-        {
-            return;
-        }
-
         StartPrimaryFire();
     }
 
@@ -454,7 +448,7 @@ public class PlayerController : MonoBehaviour
                 SpawnBullet(transform.position + aimVector, aimVector);
                 AnimatePrimaryFire();
 
-                PlaySoundEffect(playerShootSfx);
+                _audio.PlaySound(playerShootSfx);
                 fireCooldown = firingInterval;
             }
 
@@ -506,7 +500,7 @@ public class PlayerController : MonoBehaviour
         // Start charge effects
         busterChargeVFX.SetActive(true);
         animator.Play("BusterCharge");
-        PlaySoundEffect(playerSecondaryChargeSfx);
+        _audio.PlaySound(playerSecondaryChargeSfx);
 
         yield return new WaitForSeconds(2.5f);
 
@@ -520,7 +514,7 @@ public class PlayerController : MonoBehaviour
 
         // Start Fire effects
         animator.Play("BusterFire");
-        PlaySoundEffect(playerSecondaryFireSfx);
+        _audio.PlaySound(playerSecondaryFireSfx);
 
         // This is necessary to allow the collider a chance to register the hit
         yield return new WaitForSecondsRealtime(0.05f);
@@ -609,42 +603,10 @@ public class PlayerController : MonoBehaviour
     {
         hitBox.enabled = false;
 
-        playerAudio.Stop();
+        _audio.StopSound();
         UI.DisplayDeathUI(won: false);
 
         enabled = false;
         gameObject.SetActive(false);
-    }
-
-    // Player Audio ------------------------------------------
-
-    private bool IsAudioValid(SoundFile soundFile)
-    {
-        if (playerAudio == null || soundFile == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    private void SetPlayerAudioPitch(SoundFile soundFile)
-    {
-        playerAudio.pitch = 1f;
-        if (soundFile.randomizePitch)
-        {
-            playerAudio.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
-        }
-    }
-
-    private void PlaySoundEffect(SoundFile soundFile)
-    {
-        if (!IsAudioValid(soundFile))
-        {
-            return;
-        }
-
-        SetPlayerAudioPitch(soundFile);
-        playerAudio.PlayOneShot(soundFile.audioClip, soundFile.volumeScale);
     }
 }

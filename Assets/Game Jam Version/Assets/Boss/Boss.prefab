@@ -1214,6 +1214,7 @@ GameObject:
   - component: {fileID: 7371243993206142167}
   - component: {fileID: 7371243993206142164}
   - component: {fileID: 7371243993206142166}
+  - component: {fileID: 5795779918222027053}
   - component: {fileID: 6208915446036521333}
   m_Layer: 8
   m_Name: Boss
@@ -1303,6 +1304,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fireball: {fileID: 6520981021725663172, guid: 535673830259aaa41b3ff1728405b3f2, type: 3}
   firefield: {fileID: 3862862023273597285, guid: 25e63ce4cd589e843aa46e2dc9d6eca7, type: 3}
+--- !u!114 &5795779918222027053
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7371243993206142165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f041a66fc4db37c4eb8380890b60c4d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!82 &6208915446036521333
 AudioSource:
   m_ObjectHideFlags: 0
