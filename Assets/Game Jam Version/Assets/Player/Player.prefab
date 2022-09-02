@@ -112,6 +112,7 @@ GameObject:
   - component: {fileID: 3923174538641554746}
   - component: {fileID: 5607425763507169837}
   - component: {fileID: 951325374121236488}
+  - component: {fileID: 6239553807784439229}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -205,9 +206,6 @@ MonoBehaviour:
   platform: {fileID: 0}
   platformBoundsX: 9
   platformBoundsZ: 6.5
-  rawInputVector: {x: 0, y: 0, z: 0}
-  inputVector: {x: 0, y: 0, z: 0}
-  aimVector: {x: 0, y: 0, z: 0}
   playerHitSfx: {fileID: 11400000, guid: 2b46e1e46c042a344bb6e3f65cf6437b, type: 2}
   playerShootSfx: {fileID: 11400000, guid: bcea55f6b995a6349a6cb57843ebe252, type: 2}
   playerDodgeSfx: {fileID: 11400000, guid: 3956341321d8c8c488ffa90500990918, type: 2}
@@ -311,6 +309,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &6239553807784439229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5607425763507169834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1d21789e8b16734c8ea93f2989071bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _camera: {fileID: 0}
 --- !u!1 &6904168276570447366
 GameObject:
   m_ObjectHideFlags: 0

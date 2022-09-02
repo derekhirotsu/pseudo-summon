@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    private Camera cam;
     private CapsuleCollider hitBox;
     private Animator animator;
     private HealthTracker health;
@@ -118,6 +117,8 @@ public class PlayerController : MonoBehaviour
 
     private AudioSource playerAudio;
 
+    private InputProvider _input;
+
     #region UnityFunctions
 
     private void Awake()
@@ -126,17 +127,29 @@ public class PlayerController : MonoBehaviour
         hitBox = GetComponent<CapsuleCollider>();
         animator = GetComponent<Animator>();
         playerAudio = GetComponent<AudioSource>();
+        _input = GetComponent<InputProvider>();
     }
 
-    private void Start()
+    private void OnEnable()
     {
-        isPaused = false;
-        cam = Camera.main;
+        _input.OnRoll += OnRoll;
+        _input.OnSecondaryFire += OnBuster;
+        _input.OnPause += OnPause;
+        _input.OnPrimaryFireDown += OnPrimaryFireDown;
+        _input.OnPrimaryFireUp += OnPrimaryFireUp;
+    }
+
+    private void OnDisable()
+    {
+        _input.OnRoll -= OnRoll;
+        _input.OnSecondaryFire -= OnBuster;
+        _input.OnPause -= OnPause;
+        _input.OnPrimaryFireDown += OnPrimaryFireDown;
+        _input.OnPrimaryFireUp += OnPrimaryFireUp;
     }
 
     private void Update()
     {
-
         CheckPlayerHit();
         CheckBossHit();
 
@@ -146,11 +159,7 @@ public class PlayerController : MonoBehaviour
 
             HandleMovementInput();
             HandleAimingInput();
-            HandleFiringInput();
-            HandleBusterInput();
-            HandleRollInput();
         }
-        HandlePauseInput();
     }
 
     private void FixedUpdate()
@@ -174,7 +183,7 @@ public class PlayerController : MonoBehaviour
             MovePlayerInBounds(movementVector, PlayerMoveSpeed * 0.3f);
         }
 
-        if (health.CurrentHealth == 0 || bossHealth.CurrentHealth == 0)
+        if (bossHealth.CurrentHealth == 0)
         {
             enabled = false;
         }
@@ -238,260 +247,64 @@ public class PlayerController : MonoBehaviour
 
     #region InputHandling
 
-    void HandleMovementInput()
+    private void HandleMovementInput()
     {
-        Vector3 rawVec = Vector3.zero;
-        rawVec.x = Input.GetAxisRaw("Horizontal");
-        rawVec.z = Input.GetAxisRaw("Vertical");
-        movementVector = rawVec;
+        movementVector = _input.GetMovementVector();
     }
 
-    void HandleAimingInput()
+    private void HandleAimingInput()
     {
         if (hitstopCoroutine != null)
         {
             return;
         }
 
-        Vector3 screenPos = cam.WorldToScreenPoint(transform.position);
-        Vector3 playerToMouseVector = (Input.mousePosition - screenPos).normalized;
-
-        aimVector = new Vector3(playerToMouseVector.x, 0, playerToMouseVector.y);
-        transform.LookAt(new Vector3(transform.position.x + aimVector.x, transform.position.y, transform.position.z + aimVector.z));
-
-        //Debug.DrawRay(transform.position, aimVector * 2f, Color.blue);
-    }
-
-    void HandleFiringInput()
-    {
-        if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
-        {
-            return;
-        }
-
-        if (Input.GetButtonDown("Fire1") && !rolling && !busterInProgress)
-        {
-
-            shootCoroutine = Shoot();
-            StartCoroutine(shootCoroutine);
-        }
-    }
-
-    void HandleBusterInput()
-    {
-        if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
-        {
-            return;
-        }
-
-        if (Input.GetButtonDown("Fire2") && !rolling && BusterCharged() && !busterInProgress)
-        {
-            if (shootCoroutine != null)
-            {
-                StopCoroutine(shootCoroutine);
-            }
-
-            shootCoroutine = Buster();
-            StartCoroutine(shootCoroutine);
-        }
-    }
-
-    void HandleRollInput()
-    {
-        if (Input.GetButtonDown("Roll") && rollCoroutine == null && canStillRollOutOfBuster)
-        {
-            // Invincibility rolls shouldn't interrupt damage rolls
-            if (invincibilityCoroutine != null)
-            {
-                StopCoroutine(invincibilityCoroutine);
-            }
-
-            invincibilityCoroutine = GoInvincible(rollIFrameDuration);
-            StartCoroutine(invincibilityCoroutine);
-
-            if (busterInProgress)
-            {
-                busterChargeVFX.SetActive(false);
-                busterInProgress = false;
-                playerAudio.Stop();
-            }
-
-            if (shootCoroutine != null)
-            {
-                StopCoroutine(shootCoroutine);
-                shootCoroutine = null;
-            }
-
-            Vector3 rollVector = movementVector;
-
-            if (rollVector.magnitude <= Mathf.Epsilon)
-            {
-                rollVector = aimVector;
-            }
-
-            rollCoroutine = Roll(rollVector);
-            StartCoroutine(rollCoroutine);
-        }
-    }
-
-    private void HandlePauseInput()
-    {
-        if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
-        {
-            return;
-        }
-
-        if (Input.GetButtonDown("Pause"))
-        {
-
-            if (hitstopCoroutine != null)
-            {
-                StopCoroutine(hitstopCoroutine);
-            }
-
-            if (isPaused)
-            {
-                Unpause();
-            }
-            else
-            {
-                Pause();
-            }
-        }
+        aimVector = _input.GetAimVector(transform.position);
+        transform.LookAt(transform.position + aimVector);
     }
 
     #endregion
 
-    public void Pause()
+    #region HandleRoll
+
+    private void OnRoll()
     {
-        Music.instance.SetLowPassFilterEnabled(true);
-        Time.timeScale = 0f;
-        isPaused = true;
-        UI.DisplayPauseUI();
-    }
-
-    public void Unpause()
-    {
-        Music.instance.SetLowPassFilterEnabled(false);
-        isPaused = false;
-        Time.timeScale = 1f;
-        UI.HidePauseUI();
-        UI.HideOptionsUI();
-    }
-
-
-    protected IEnumerator Shoot()
-    {
-
-        speedMod = 0.5f;
-
-        while (Input.GetButton("Fire1"))
+        if (rollCoroutine != null || !canStillRollOutOfBuster || isPaused)
         {
-
-            if (fireCooldown <= 0 && rollCoroutine == null)
-            {
-                SpawnBullet(transform.position + aimVector, aimVector);
-                AnimatePrimaryFire();
-
-                PlaySoundEffect(playerShootSfx);
-                fireCooldown = firingInterval;
-            }
-
-            yield return new WaitForEndOfFrame();
+            return;
         }
 
-        shootCoroutine = null;
-        speedMod = 1f;
-
-    }
-
-    private void SpawnBullet(Vector3 origin, Vector3 direction)
-    {
-        TestBullet newBullet = Instantiate(bulletPrefab, origin, Quaternion.identity).GetComponent<TestBullet>();
-        newBullet.SetTargetLayer(targetLayer);
-        newBullet.SetDirection(direction);
-    }
-
-    private void AnimatePrimaryFire()
-    {
-        // Toggle Left/Right firing animation.
-        animator.SetBool("FireSide", !animator.GetBool("FireSide"));
-
-        animator.Play("Fire");
-    }
-
-    protected IEnumerator Buster()
-    {
-        // 1. Begin charging.
-        busterInProgress = true;
-        canStillRollOutOfBuster = true;
-        busterChargeVFX.SetActive(true);
-        speedMod = 0.5f;
-
-        // Animate
-        animator.Play("BusterCharge");
-        PlaySoundEffect(playerSecondaryChargeSfx);
-        yield return new WaitForSeconds(2.5f);
-
-        // 2. Create buster projectile
-        canStillRollOutOfBuster = false;
-        GameObject busterEffect = Instantiate(busterFireVFX, transform);
-        PlayerBusterAttack newBuster = Instantiate(busterPrefab, transform).GetComponent<PlayerBusterAttack>();
-        newBuster.SetTargetLayer(targetLayer);
-
-        // Animate
-        animator.Play("BusterFire");
-        PlaySoundEffect(playerSecondaryFireSfx);
-        // This is necessary to allow the collider a chance to register the hit
-        yield return new WaitForSecondsRealtime(0.05f);
-
-        busterEffect.transform.parent = null;
-        newBuster.transform.parent = null;
-
-        // 3. Big hitstop and hit registration
-        camHolder.CameraFlash(10f);
-        camHolder.CameraShake(0.8f, 1.0f);
-        if (hitstopCoroutine != null)
+        // Invincibility rolls shouldn't interrupt damage rolls
+        if (invincibilityCoroutine != null)
         {
-            StopCoroutine(hitstopCoroutine);
+            StopCoroutine(invincibilityCoroutine);
         }
-        hitstopCoroutine = HitStop(0.7f);
-        StartCoroutine(hitstopCoroutine);
 
-        yield return new WaitForSecondsRealtime(0.7f);
+        invincibilityCoroutine = GoInvincible(rollIFrameDuration);
+        StartCoroutine(invincibilityCoroutine);
 
-        newBuster.DamageAllCollisions();
-
-        // Reset buster cooldown, coroutines, and start wind-down phase
-        currentHitCharge = 0;
-
-        StartCoroutine(CooldownBuster());
-
-        busterChargeVFX.SetActive(false);
-        busterInProgress = false;
-        canStillRollOutOfBuster = true;
-        shootCoroutine = null;
-        speedMod = 1f;
-    }
-
-    protected IEnumerator CooldownBuster()
-    {
-        busterCooldown = windDownTime;
-        while (BusterOnCooldown)
+        if (busterInProgress)
         {
-            busterCooldown -= Time.fixedDeltaTime;
-            yield return new WaitForFixedUpdate();
+            busterChargeVFX.SetActive(false);
+            busterInProgress = false;
+            playerAudio.Stop();
         }
-    }
 
-    protected IEnumerator GoInvincible(float duration)
-    {
-        hitBox.enabled = false;
+        if (shootCoroutine != null)
+        {
+            StopCoroutine(shootCoroutine);
+            shootCoroutine = null;
+        }
 
-        yield return new WaitForSeconds(duration);
+        Vector3 rollVector = movementVector;
 
-        hitBox.enabled = true;
-        invincibilityCoroutine = null;
+        if (rollVector.magnitude <= Mathf.Epsilon)
+        {
+            rollVector = aimVector;
+        }
+
+        rollCoroutine = Roll(rollVector);
+        StartCoroutine(rollCoroutine);
     }
 
     protected IEnumerator Roll(Vector3 rollDirection)
@@ -500,12 +313,7 @@ public class PlayerController : MonoBehaviour
 
         GameObject dashObject = Instantiate(dashParticle, transform.position, Quaternion.LookRotation(-rollDirection, Vector3.up));
 
-        // Set dash direction for animation
-        float dashX = transform.InverseTransformDirection(rollDirection).normalized.x;
-        float dashZ = transform.InverseTransformDirection(rollDirection).normalized.z;
-        animator.SetFloat("dashX", dashX);
-        animator.SetFloat("dashZ", dashZ);
-        animator.Play("Dash");
+        AnimateRoll(rollDirection);
 
         rolling = true;
 
@@ -543,6 +351,229 @@ public class PlayerController : MonoBehaviour
         {
             speedMod = 1f;
         }
+    }
+
+    private void AnimateRoll(Vector3 rollDirection)
+    {
+        float dashX = transform.InverseTransformDirection(rollDirection).normalized.x;
+        float dashZ = transform.InverseTransformDirection(rollDirection).normalized.z;
+        animator.SetFloat("dashX", dashX);
+        animator.SetFloat("dashZ", dashZ);
+        animator.Play("Dash");
+    }
+
+    #endregion
+
+    #region HandlePause
+
+    private void OnPause()
+    {
+        if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
+        {
+            return;
+        }
+
+        if (hitstopCoroutine != null)
+        {
+            StopCoroutine(hitstopCoroutine);
+        }
+
+        if (isPaused)
+        {
+            Unpause();
+        }
+        else
+        {
+            Pause();
+        }
+    }
+
+    public void Pause()
+    {
+        Music.instance.SetLowPassFilterEnabled(true);
+        Time.timeScale = 0f;
+        isPaused = true;
+        UI.DisplayPauseUI();
+    }
+
+    public void Unpause()
+    {
+        Music.instance.SetLowPassFilterEnabled(false);
+        isPaused = false;
+        Time.timeScale = 1f;
+        UI.HidePauseUI();
+        UI.HideOptionsUI();
+    }
+
+    #endregion
+
+    #region HandlePrimaryFire
+
+    private void OnPrimaryFireDown()
+    {
+        if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
+        {
+            return;
+        }
+
+        StartPrimaryFire();
+    }
+
+    private void OnPrimaryFireUp()
+    {
+        StopPrimaryFire();
+    }
+
+    private void StartPrimaryFire() {
+        if (UI_TutorialOnFirstPlay.Instance.FirstPlay || rolling || busterInProgress || isPaused)
+        {
+            return;
+        }
+
+        speedMod = 0.5f;
+        shootCoroutine = ShootCoroutine();
+        StartCoroutine(shootCoroutine);
+    }
+
+    private void StopPrimaryFire()
+    {
+        if (shootCoroutine != null )
+        {
+            StopCoroutine(shootCoroutine);
+        }
+
+        speedMod = 1f;
+    }
+
+    private IEnumerator ShootCoroutine()
+    {
+        while (true)
+        {
+            if (fireCooldown <= 0 && rollCoroutine == null)
+            {
+                SpawnBullet(transform.position + aimVector, aimVector);
+                AnimatePrimaryFire();
+
+                PlaySoundEffect(playerShootSfx);
+                fireCooldown = firingInterval;
+            }
+
+            yield return new WaitForEndOfFrame();
+        }
+    }
+
+    private void SpawnBullet(Vector3 origin, Vector3 direction)
+    {
+        TestBullet newBullet = Instantiate(bulletPrefab, origin, Quaternion.identity).GetComponent<TestBullet>();
+        newBullet.SetTargetLayer(targetLayer);
+        newBullet.SetDirection(direction);
+    }
+
+    private void AnimatePrimaryFire()
+    {
+        // Toggle Left/Right firing animation.
+        animator.SetBool("FireSide", !animator.GetBool("FireSide"));
+
+        animator.Play("Fire");
+    }
+
+    #endregion
+
+    #region HandleBuster
+    private void OnBuster()
+    {
+        if (UI_TutorialOnFirstPlay.Instance.FirstPlay || rolling || !BusterCharged() || busterInProgress || isPaused)
+        {
+            return;
+        }
+
+        if (shootCoroutine != null)
+        {
+            StopCoroutine(shootCoroutine);
+        }
+
+        shootCoroutine = Buster();
+        StartCoroutine(shootCoroutine);
+    }
+
+    protected IEnumerator Buster()
+    {
+        // Update state
+        busterInProgress = true;
+        canStillRollOutOfBuster = true;
+        speedMod = 0.5f;
+
+        // Start charge effects
+        busterChargeVFX.SetActive(true);
+        animator.Play("BusterCharge");
+        PlaySoundEffect(playerSecondaryChargeSfx);
+
+        yield return new WaitForSeconds(2.5f);
+
+        // Update state
+        canStillRollOutOfBuster = false;
+
+        // Create buster projectile
+        GameObject busterEffect = Instantiate(busterFireVFX, transform);
+        PlayerBusterAttack newBuster = Instantiate(busterPrefab, transform).GetComponent<PlayerBusterAttack>();
+        newBuster.SetTargetLayer(targetLayer);
+
+        // Start Fire effects
+        animator.Play("BusterFire");
+        PlaySoundEffect(playerSecondaryFireSfx);
+
+        // This is necessary to allow the collider a chance to register the hit
+        yield return new WaitForSecondsRealtime(0.05f);
+
+        busterEffect.transform.parent = null;
+        newBuster.transform.parent = null;
+
+        // Big hitstop and hit registration
+        camHolder.CameraFlash(10f);
+        camHolder.CameraShake(0.8f, 1.0f);
+        if (hitstopCoroutine != null)
+        {
+            StopCoroutine(hitstopCoroutine);
+        }
+        hitstopCoroutine = HitStop(0.7f);
+        StartCoroutine(hitstopCoroutine);
+
+        yield return new WaitForSecondsRealtime(0.7f);
+
+        newBuster.DamageAllCollisions();
+
+        busterChargeVFX.SetActive(false);
+
+        StartCoroutine(CooldownBuster());
+
+        // Update state
+        currentHitCharge = 0;
+        busterInProgress = false;
+        canStillRollOutOfBuster = true;
+        shootCoroutine = null;
+        speedMod = 1f;
+    }
+
+    protected IEnumerator CooldownBuster()
+    {
+        busterCooldown = windDownTime;
+        while (BusterOnCooldown)
+        {
+            busterCooldown -= Time.fixedDeltaTime;
+            yield return new WaitForFixedUpdate();
+        }
+    }
+
+    #endregion
+
+    protected IEnumerator GoInvincible(float duration)
+    {
+        hitBox.enabled = false;
+
+        yield return new WaitForSeconds(duration);
+
+        hitBox.enabled = true;
+        invincibilityCoroutine = null;
     }
 
     protected void MovePlayerInBounds(Vector3 moveDirection, float moveSpeed)
