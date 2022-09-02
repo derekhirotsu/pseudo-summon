@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4011373345642362155}
   - component: {fileID: 7542674316035473602}
+  - component: {fileID: 705264988334118583}
   - component: {fileID: 6675667614064592505}
   m_Layer: 0
   m_Name: FireFieldSpell
@@ -52,6 +53,18 @@ MonoBehaviour:
   inidicator: {fileID: 8874333133907115526}
   chargeSfx: {fileID: 11400000, guid: 3b91ddb30115e03439d3781d239efec2, type: 2}
   detonateSfx: {fileID: 11400000, guid: 892aec6a1b7e4764d8fa695b4f175cf6, type: 2}
+--- !u!114 &705264988334118583
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3862862023273597285}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f041a66fc4db37c4eb8380890b60c4d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!82 &6675667614064592505
 AudioSource:
   m_ObjectHideFlags: 0

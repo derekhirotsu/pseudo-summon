@@ -9,12 +9,12 @@ public class auto_Lariat : MonoBehaviour
     [SerializeField] private List<TestBullet> childProjectiles;
 
     private HealthTracker health;
-    private AudioSource audioSource;
+    private AudioProvider _audio;
 
     private float yRotation = 0;
 
     private void Awake() {
-        audioSource = GetComponent<AudioSource>();
+        _audio = GetComponent<AudioProvider>();
         health = GetComponent<HealthTracker>();
     }
 
@@ -36,7 +36,7 @@ public class auto_Lariat : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(0, yRotation, 0), 1f);
 
         if (health.TookDamage(consumeTrigger:true)) {
-            PlaySoundEffect(hitSfx);
+            _audio.PlaySound(hitSfx);
         }
 
         if (health.HealthPercentage <= 0) {
@@ -55,31 +55,5 @@ public class auto_Lariat : MonoBehaviour
         }
 
         Destroy(gameObject);
-    }
-
-    // Audio ------------------------------------------
-
-    private bool IsAudioValid(SoundFile soundFile) {
-        if (audioSource == null || soundFile == null) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private void SetAudioPitch(SoundFile soundFile) {
-        audioSource.pitch = 1f;
-        if (soundFile.randomizePitch) {
-            audioSource.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
-        }
-    }
-
-    private void PlaySoundEffect(SoundFile soundFile) {
-        if (!IsAudioValid(soundFile)) {
-            return;
-        }
-
-        SetAudioPitch(soundFile);
-        audioSource.PlayOneShot(soundFile.audioClip, soundFile.volumeScale);
     }
 }

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6760753863597940285}
   - component: {fileID: 480607060035576125}
+  - component: {fileID: 4576784350277692381}
   - component: {fileID: 1014536612292425321}
   m_Layer: 0
   m_Name: FireballSpell
@@ -49,6 +50,18 @@ MonoBehaviour:
   projectileSpeed: 15
   spellDuration: 10
   fireballSfx: {fileID: 11400000, guid: c0e0338c211462d4cbb7497e0279f09a, type: 2}
+--- !u!114 &4576784350277692381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6520981021725663172}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f041a66fc4db37c4eb8380890b60c4d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!82 &1014536612292425321
 AudioSource:
   m_ObjectHideFlags: 0

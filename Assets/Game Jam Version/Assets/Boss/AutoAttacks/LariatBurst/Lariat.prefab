@@ -11,12 +11,13 @@ GameObject:
   - component: {fileID: 1053040402557552440}
   - component: {fileID: 28547250349604696}
   - component: {fileID: 5451946036851736642}
-  - component: {fileID: 5059617775722488878}
   - component: {fileID: 6898268831427149521}
   - component: {fileID: 558232054358749621}
-  - component: {fileID: -8979095553811918234}
   - component: {fileID: 8135856225968774201}
+  - component: {fileID: 8408150139827102622}
   - component: {fileID: 7334336456244374297}
+  - component: {fileID: -8979095553811918234}
+  - component: {fileID: 5059617775722488878}
   m_Layer: 8
   m_Name: Lariat
   m_TagString: Untagged
@@ -92,19 +93,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!135 &5059617775722488878
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2063947483988415485}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &6898268831427149521
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -140,24 +128,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rotationSpeed: 100
-  childProjectiles: []
   hitSfx: {fileID: 11400000, guid: b4d59fd8b5e1e974184e186f2df48938, type: 2}
---- !u!54 &-8979095553811918234
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2063947483988415485}
-  serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_UseGravity: 0
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
+  childProjectiles: []
 --- !u!114 &8135856225968774201
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -172,6 +144,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 2
   currentHealth: 0
+--- !u!114 &8408150139827102622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2063947483988415485}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f041a66fc4db37c4eb8380890b60c4d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!82 &7334336456244374297
 AudioSource:
   m_ObjectHideFlags: 0
@@ -268,6 +252,35 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!54 &-8979095553811918234
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2063947483988415485}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!135 &5059617775722488878
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2063947483988415485}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &96492771311444920
 PrefabInstance:
   m_ObjectHideFlags: 0
