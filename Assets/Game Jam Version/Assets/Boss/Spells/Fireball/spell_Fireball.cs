@@ -7,7 +7,7 @@ public class spell_Fireball : MonoBehaviour
     [SerializeField] private float projectileSpeed;
     [SerializeField] private float spellDuration;
     [SerializeField] private SoundFile fireballSfx;
-    private AudioSource audioSource;
+    private AudioProvider _audio;
 
     private readonly Vector3 Left = Vector3.left;
     private readonly Vector3 Right = Vector3.right;
@@ -16,7 +16,7 @@ public class spell_Fireball : MonoBehaviour
 
     private void Awake()
     {
-        audioSource = GetComponent<AudioSource>();
+        _audio = GetComponent<AudioProvider>();
     }
 
     public void Cast(int pattern)
@@ -79,7 +79,7 @@ public class spell_Fireball : MonoBehaviour
                 break;
         }
 
-        PlaySoundEffect(fireballSfx);
+        _audio.PlaySound(fireballSfx);
 
         yield return new WaitForSeconds(spellDuration);
         Destroy(gameObject);
@@ -258,37 +258,5 @@ public class spell_Fireball : MonoBehaviour
             CreateProjectile(location, Down);
             yield return interval;
         }
-    }
-
-    // Audio ------------------------------------------
-
-    private bool IsAudioValid(SoundFile soundFile)
-    {
-        if (audioSource == null || soundFile == null)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    private void SetAudioPitch(SoundFile soundFile)
-    {
-        audioSource.pitch = 1f;
-        if (soundFile.randomizePitch)
-        {
-            audioSource.pitch = Random.Range(soundFile.minPitch, soundFile.maxPitch);
-        }
-    }
-
-    private void PlaySoundEffect(SoundFile soundFile)
-    {
-        if (!IsAudioValid(soundFile))
-        {
-            return;
-        }
-
-        SetAudioPitch(soundFile);
-        audioSource.PlayOneShot(soundFile.audioClip, soundFile.volumeScale);
     }
 }
