@@ -10,32 +10,21 @@ public class TestBullet : MonoBehaviour
     [SerializeField] protected GameObject optionalDeathParticle;
 
     private Vector3 direction;
-    protected bool directionSet = false;
+    private float timeAlive = 0f;
 
     #region UnityFunctions
 
-    private void Start()
-    {
-        Destroy(gameObject, timeToLive);
-    }
-
     private void FixedUpdate()
     {
-        transform.position += (direction.normalized * bulletSpeed * Time.fixedDeltaTime);
-
-        if (directionSet)
+        if (timeAlive > timeToLive)
         {
-            transform.rotation = Quaternion.LookRotation(direction.normalized);
+            HandleDestroy();
+            return;
         }
-    }
 
-    private void OnDisable()
-    {
-        if (optionalDeathParticle != null)
-        {
-            GameObject particle = Instantiate(optionalDeathParticle, transform.position, transform.rotation);
-            Destroy(particle, 0.8f);
-        }
+        timeAlive += Time.fixedDeltaTime;
+
+        transform.position += (direction * bulletSpeed * Time.fixedDeltaTime);
     }
 
     private void OnTriggerEnter(Collider entity) {
@@ -46,14 +35,13 @@ public class TestBullet : MonoBehaviour
         if (targetLayer.Contains(entity.gameObject.layer)) {
             HandleTargetCollision(entity);
         }
-
     }
 
     #endregion
 
     public void SetDirection(Vector3 newDirection) {
-        direction = newDirection;
-        directionSet = true;
+        direction = newDirection.normalized;
+        transform.rotation = Quaternion.LookRotation(direction);
     }
 
     public void SetTargetLayer(LayerMask targets) {
@@ -62,7 +50,7 @@ public class TestBullet : MonoBehaviour
 
     private void HandleWallCollision(Collider entity)
     {
-        Destroy(gameObject);
+        HandleDestroy();
     }
 
     private void HandleTargetCollision(Collider entity)
@@ -72,6 +60,17 @@ public class TestBullet : MonoBehaviour
         if (entityHealth != null)
         {
             entityHealth.ModifyHealth(-bulletDamage);
+        }
+
+        HandleDestroy();
+    }
+
+    private void HandleDestroy ()
+    {
+        if (optionalDeathParticle != null)
+        {
+            GameObject particle = Instantiate(optionalDeathParticle, transform.position, transform.rotation);
+            Destroy(particle, 0.8f);
         }
 
         Destroy(gameObject);

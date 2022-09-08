@@ -27,6 +27,7 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5018016978854489858}
   - {fileID: 1719342025660532787}
@@ -47,7 +48,7 @@ LODGroup:
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
   m_LODs:
-  - screenRelativeHeight: 0.5615
+  - screenRelativeHeight: 0.48827487
     fadeTransitionWidth: 0
     renderers:
     - renderer: {fileID: 459073839446992053}
@@ -118,16 +119,20 @@ PrefabInstance:
       propertyPath: m_Name
       value: floorTileHD
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 12f27c76ad1cb444490188ec8b1e9a7c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 12f27c76ad1cb444490188ec8b1e9a7c, type: 3}
---- !u!4 &1719342025660532787 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 12f27c76ad1cb444490188ec8b1e9a7c, type: 3}
-  m_PrefabInstance: {fileID: 1177388984110215128}
-  m_PrefabAsset: {fileID: 0}
 --- !u!23 &459073839446992053 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: -7635826562936255635, guid: 12f27c76ad1cb444490188ec8b1e9a7c, type: 3}
+  m_PrefabInstance: {fileID: 1177388984110215128}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1719342025660532787 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 12f27c76ad1cb444490188ec8b1e9a7c, type: 3}
   m_PrefabInstance: {fileID: 1177388984110215128}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4767388574934714601
