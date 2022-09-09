@@ -65,7 +65,7 @@ public class TestBullet : MonoBehaviour
         HandleDestroy();
     }
 
-    private void HandleDestroy ()
+    private void HandleDestroy()
     {
         if (optionalDeathParticle != null)
         {

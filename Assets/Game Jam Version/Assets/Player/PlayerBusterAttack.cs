@@ -12,8 +12,7 @@ public class PlayerBusterAttack : MonoBehaviour
     [SerializeField] protected GameObject optionalDeathParticle;
     protected bool directionSet = false;
 
-     //The list of colliders currently inside the trigger
-    // TriggerList : List.<Collider> = new List.<Collider>();
+    // The list of colliders currently inside the trigger
     [SerializeField] protected List<Collider> triggerList;
 
     Vector3 direction;
@@ -24,46 +23,50 @@ public class PlayerBusterAttack : MonoBehaviour
         Destroy(this.gameObject, this.timeToLive);
     }
 
+    void Update()
+    {
+        foreach (Collider col in triggerList)
+        {
+            if (col == null)
+            {
+                continue;
+            }
+            Debug.Log(this.name + " is colliding with " + col.name);
+        }
+
+        if (triggerList.Count <= 0)
+        {
+            Debug.LogWarning(this.name + " has no collisions ");
+        }
+    }
+
+    void FixedUpdate()
+    {
+        this.transform.position += (transform.up * 0.1f * Time.unscaledDeltaTime);
+    }
+
+    void OnDisable()
+    {
+        if (optionalDeathParticle != null)
+        {
+            GameObject particle = Instantiate(optionalDeathParticle, this.transform.position, this.transform.rotation);
+            Destroy(particle, 0.8f);
+        }
+    }
+
     void OnTriggerEnter(Collider entity) {
-
-        // Bullet hit wall
-        // if (wallCollisionLayer.Contains(entity.gameObject.layer)) {
-        //     Destroy(this.gameObject);
-        // }
-
         // Bullet hit target
         if (targetLayer.Contains(entity.gameObject.layer) && !triggerList.Contains(entity)) {
 
             triggerList.Add(entity);
-            // HealthTracker health = entity.gameObject.GetComponent<HealthTracker>();
-            
-            // if (health != null) {
-            //     health.ModifyHealth(-bulletDamage);
-            // } else {
-            //     Debug.LogWarning(this.name + " collided with " + entity.name + ", but no health component was found.");
-            // }
         }
     }
 
     void OnTriggerExit(Collider entity) {
-
-        // Bullet hit wall
-        // if (wallCollisionLayer.Contains(entity.gameObject.layer)) {
-        //     Destroy(this.gameObject);
-        // }
-
         // Bullet hit target
         if (triggerList.Contains(entity)) {
 
             triggerList.Remove(entity);
-            
-            // HealthTracker health = entity.gameObject.GetComponent<HealthTracker>();
-            
-            // if (health != null) {
-            //     health.ModifyHealth(-bulletDamage);
-            // } else {
-            //     Debug.LogWarning(this.name + " collided with " + entity.name + ", but no health component was found.");
-            // }
         }
     }
 
@@ -95,23 +98,6 @@ public class PlayerBusterAttack : MonoBehaviour
         }
     }
 
-    void Update() {
-        foreach(Collider col in triggerList) {
-            if (col == null) {
-                continue;
-            }
-            Debug.Log(this.name + " is colliding with " + col.name);
-        }
-
-        if (triggerList.Count <= 0) {
-            Debug.LogWarning(this.name + " has no collisions ");
-        }
-    }
-
-    void FixedUpdate() {
-        this.transform.position += (transform.up * 0.1f * Time.unscaledDeltaTime);
-    }
-
     public void SetDirection(Vector3 newDirection) {
         direction = newDirection;
         directionSet = true;
@@ -119,12 +105,5 @@ public class PlayerBusterAttack : MonoBehaviour
 
     public void SetTargetLayer(LayerMask targets) {
         targetLayer = targets;
-    }
-
-    void OnDisable() {
-        if (optionalDeathParticle != null) {
-            GameObject particle = Instantiate (optionalDeathParticle, this.transform.position, this.transform.rotation);
-            Destroy(particle, 0.8f);
-        }
     }
 }

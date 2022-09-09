@@ -53,8 +53,7 @@ public class UI_ScoreTracker : MonoBehaviour
         }
 
         if (playerHealth.CurrentHealth > 0) {
-            Debug.Log("The player winned and earned " + (score * playerHealth.HealthPercentage) + " bompus points! ");
-            AddScore( Mathf.RoundToInt(score * playerHealth.HealthPercentage) );
+            AddScore(Mathf.RoundToInt(score * playerHealth.HealthPercentage));
         }
     }
 
