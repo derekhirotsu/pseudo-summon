@@ -69,8 +69,8 @@ public class TestBullet : MonoBehaviour
     {
         if (optionalDeathParticle != null)
         {
-            GameObject particle = Instantiate(optionalDeathParticle, transform.position, transform.rotation);
-            Destroy(particle, 0.8f);
+            GameObject destroyEffect = Instantiate(optionalDeathParticle, transform.position, transform.rotation);
+            Destroy(destroyEffect, 0.8f);
         }
 
         Destroy(gameObject);
