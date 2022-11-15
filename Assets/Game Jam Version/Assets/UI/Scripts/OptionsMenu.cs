@@ -7,61 +7,70 @@ using TMPro;
 
 public class OptionsMenu : MonoBehaviour
 {
-    [SerializeField] Slider musicVolumeSlider;
-    [SerializeField] Slider sfxVolumeSlider;
-    [SerializeField] TMP_Dropdown qualityDropdown;
-    [SerializeField] TMP_Dropdown musicTrackDropdown;
+    [SerializeField] private Slider musicVolumeSlider;
+    [SerializeField] private Slider sfxVolumeSlider;
+    [SerializeField] private TMP_Dropdown qualityDropdown;
+    [SerializeField] private TMP_Dropdown musicTrackDropdown;
     [SerializeField] private AudioMixer mixer;
+    private const string MIXER_MUSIC_VOLUME = "musicVolume";
+    private const string MIXER_SFX_VOLUME = "sfxVolume";
 
-    const string MIXER_MUSIC_VOLUME = "musicVolume";
-    const string MIXER_SFX_VOLUME = "sfxVolume";
-
-    void Awake() {
-        musicTrackDropdown.value = OptionsController.instance.GetMusicTrack();
+    private void Start()
+    {
+        musicTrackDropdown.value = Music.Instance.CurrentTrackIndex;
 
         musicVolumeSlider.onValueChanged.AddListener(SetMusicVolume);
         sfxVolumeSlider.onValueChanged.AddListener(SetSfxVolume);
     }
 
-    void OnEnable() {
+    private void OnEnable()
+    {
         musicVolumeSlider.value = GetMusicVolume();
         sfxVolumeSlider.value = GetSfxVolume();
         qualityDropdown.value = QualitySettings.GetQualityLevel(); 
     }
     
-    public void OnGraphicsQualitySelection(int qualityIndex) {
+    public void OnGraphicsQualitySelection(int qualityIndex)
+    {
         QualitySettings.SetQualityLevel(qualityIndex);
     }
 
-    public void OnMusicTrackSelect(int trackNumber) {
-        OptionsController.instance.OnMusicChangeTrack(trackNumber);
+    public void OnMusicTrackSelect(int trackNumber)
+    {
+        Music.Instance.SetMusicTrack(trackNumber);
     }
 
-    void SetMusicVolume(float value) {
+    private void SetMusicVolume(float value)
+    {
         mixer.SetFloat(MIXER_MUSIC_VOLUME, VolumeToDb(value));
     }
 
-    void SetSfxVolume(float value) {
+    private void SetSfxVolume(float value)
+    {
         mixer.SetFloat(MIXER_SFX_VOLUME, VolumeToDb(value));
     }
 
-    float GetMusicVolume() {
+    private float GetMusicVolume()
+    {
         float musicVolumeDb = 0.0f;
         mixer.GetFloat(MIXER_MUSIC_VOLUME, out musicVolumeDb);
         return DbToVolume(musicVolumeDb);
     }
 
-    float GetSfxVolume() {
+    private float GetSfxVolume()
+    {
         float sfxVolumeDb = 0.0f;
         mixer.GetFloat(MIXER_SFX_VOLUME, out sfxVolumeDb);
         return DbToVolume(sfxVolumeDb);        
     }
- 
-    float DbToVolume(float dB) {
+
+    private float DbToVolume(float dB)
+    {
         return Mathf.Pow(10.0f, 0.05f * dB);
     }
 
-    float VolumeToDb(float volume) {
+    private float VolumeToDb(float volume)
+    {
         return 20.0f * Mathf.Log10(volume);
     }
 }

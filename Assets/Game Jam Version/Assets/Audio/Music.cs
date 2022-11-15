@@ -5,72 +5,81 @@ using UnityEngine.SceneManagement;
 
 public class Music : MonoBehaviour
 {
-    [SerializeField] List<AudioClip> musicTracks;
+    [SerializeField] private AudioClip _titleMusic;
+    [SerializeField] private List<AudioClip> _musicTracks;
 
     private AudioSource source;
     private AudioLowPassFilter lowPassFilter;
 
-    public static Music instance;
+    public int CurrentTrackIndex { get; private set; }
+    public static Music Instance { get; private set; }
 
-    OptionsController options;
-
-    void Awake()
+    private void Awake()
     {
-        options = OptionsController.instance;
         source = GetComponent<AudioSource>();
-        SetMusicTrack(options.GetMusicTrack());
         lowPassFilter = GetComponent<AudioLowPassFilter>();
-        if (instance == null) {
-            instance = this;
-            DontDestroyOnLoad(instance);
-        } else {
-            Destroy(this.gameObject);
-        }    
-    }
-    
-    protected void PlaySong() {
-        if (source.isPlaying) {
-            source.loop = true;
-            return;
+
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(Instance);
         }
-
-        source.loop = true;
-        source.Play();
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
-    void OnEnable() {
-        // Tell our 'OnLevelFinishedLoading' function to start listening for a scene change as soon as this script is enabled.
+    private void OnEnable()
+    {
         SceneManager.sceneLoaded += OnSceneLoad;
-        options.onMusicTrackChange += SetMusicTrack;
     }
 
-    void OnDisable() {
-        // Tell our 'OnLevelFinishedLoading' function to start listening for a scene change as soon as this script is enabled.
+    private void OnDisable() 
+    {
         SceneManager.sceneLoaded -= OnSceneLoad;
-        options.onMusicTrackChange -= SetMusicTrack;
     }
 
-    protected void OnSceneLoad(Scene scene, LoadSceneMode mode) {
-        if (scene.name.Equals("StartScene")) {
-            Destroy(this.gameObject);
-        } else { 
-            PlaySong();
+    protected void OnSceneLoad(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name.Equals("StartScene"))
+        {
+            PlayTitleMusic();
+        }
+        else
+        {
+            SetMusicTrack(CurrentTrackIndex);
         }
     }
 
-    public void SetMusicTrack(int trackIndex) {
-        int index = Mathf.Clamp(trackIndex, 0, musicTracks.Count - 1);
-        AudioClip selectedTrack = musicTracks[index];
+    public void SetMusicTrack(int trackIndex)
+    {
+        int index = Mathf.Clamp(trackIndex, 0, _musicTracks.Count - 1);
+        AudioClip selectedTrack = _musicTracks[index];
 
-        if (selectedTrack == source.clip) {
+        if (selectedTrack == source.clip)
+        {
             return;
         }
 
-        source.clip = selectedTrack;
-        source.Play();
+        CurrentTrackIndex = index;
+
+        // Don't change music in the main menu scene.
+        if (SceneManager.GetActiveScene().name != "StartScene")
+        {
+            source.clip = selectedTrack;
+            source.Play();
+        }
     }
 
-    public void SetLowPassFilterEnabled(bool enabled) {
+    public void SetLowPassFilterEnabled(bool enabled)
+    {
         lowPassFilter.enabled = enabled;
-    } 
+    }
+
+    private void PlayTitleMusic()
+    {
+        source.clip = _titleMusic;
+        source.PlayDelayed(2f);
+    }
 }

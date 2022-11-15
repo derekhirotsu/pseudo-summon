@@ -387,7 +387,7 @@ public class PlayerController : MonoBehaviour
 
     public void Pause()
     {
-        Music.instance.SetLowPassFilterEnabled(true);
+        Music.Instance.SetLowPassFilterEnabled(true);
         Time.timeScale = 0f;
         isPaused = true;
         UI.DisplayPauseUI();
@@ -395,7 +395,7 @@ public class PlayerController : MonoBehaviour
 
     public void Unpause()
     {
-        Music.instance.SetLowPassFilterEnabled(false);
+        Music.Instance.SetLowPassFilterEnabled(false);
         isPaused = false;
         Time.timeScale = 1f;
         UI.HidePauseUI();
