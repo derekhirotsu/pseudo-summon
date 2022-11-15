@@ -12,25 +12,22 @@ public class PlayerSpell : MonoBehaviour
     [SerializeField] private bool _semiAuto;
 
     private float _fireCooldown = 0f;
-    private bool _canFire = true;
+    public bool _canFire = true;
     private bool _isFiring = false;
 
-    private Dictionary<int, GameObject> _list;
-
-    private void Start()
+    public bool ReadyToFire
     {
-        _list = new Dictionary<int, GameObject>();
+        get { return _canFire && _fireCooldown <= 0f && _isFiring; }
     }
 
     private void Update()
     {
-        //Debug.DrawRay(transform.position, transform.forward * 10, Color.blue);
         if (_fireCooldown > 0f)
         {
             _fireCooldown -= Time.deltaTime;
         }
 
-        if (_canFire && _fireCooldown <= 0f && _isFiring)
+        if (ReadyToFire)
         {
             Fire();
         }
@@ -38,15 +35,11 @@ public class PlayerSpell : MonoBehaviour
 
     public void OnAttackDown()
     {
-        if (_canFire && _fireCooldown <= 0f)
-        {
-            Fire();
-        }
+        _isFiring = true;
     }
 
     public void OnAttackUp()
     {
-        _canFire = true;
         _isFiring = false;
     }
 
@@ -55,32 +48,13 @@ public class PlayerSpell : MonoBehaviour
     {
         if (_semiAuto)
         {
-            _canFire = false;
+            _isFiring = false;
         }
-        _isFiring = true;
 
         GameObject newBullet = Instantiate(_bullet, transform.position, transform.rotation);
-        PlayerBullet b = newBullet.GetComponent<PlayerBullet>();
-        _list.Add(newBullet.GetInstanceID(), newBullet);
-        b.TestAction += OnTestAction;
-
         _fireCooldown = _fireInterval;
         _audio.PlaySound(playerShootSfx);
         _animator.SetBool("FireSide", !_animator.GetBool("FireSide"));
         _animator.Play("Fire");
-    }
-
-    private void OnTestAction(PlayerBullet bullet)
-    {
-        Debug.Log("responding to test action");
-
-        bullet.TestAction -= OnTestAction;
-
-        Destroy(bullet.gameObject);
-
-        //foreach(KeyValuePair<int, GameObject> entry in _list)
-        //{
-        //    Debug.Log(entry.Key + " - " + entry.Value);
-        //}
     }
 }

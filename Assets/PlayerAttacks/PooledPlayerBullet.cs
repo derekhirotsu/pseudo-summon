@@ -6,20 +6,20 @@ using static UnityEngine.EventSystems.EventTrigger;
 
 public class PooledPlayerBullet : MonoBehaviour
 {
-    [SerializeField] private float _moveSpeed;
-    [SerializeField] private float _timeToLive;
+    [SerializeField] protected float _moveSpeed;
+    [SerializeField] protected float _timeToLive;
 
-    private LayerMask _mask;
-    private float _timeAlive = 0f;
+    protected LayerMask _mask;
+    protected float _timeAlive = 0f;
 
     public EventHandler<BulletCollisionEvent> BulletCollided;
 
-    private void OnDisable()
+    protected void OnDisable()
     {
         _timeAlive = 0f;
     }
 
-    private void FixedUpdate()
+    protected virtual void FixedUpdate()
     {
         if (_timeAlive >= _timeToLive)
         {
@@ -33,7 +33,7 @@ public class PooledPlayerBullet : MonoBehaviour
         transform.position += (_moveSpeed * Time.fixedDeltaTime * transform.forward);
     }
 
-    private void OnTriggerEnter(Collider other)
+    protected void OnTriggerEnter(Collider other)
     {
         if (_mask.Contains(other.gameObject.layer))
         {

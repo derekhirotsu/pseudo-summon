@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class TestPlayer : MonoBehaviour
 {
-    [SerializeField] private PlayerSpell spell;
-    [SerializeField] private PooledPlayerSpell _pooledSpell;
+    //[SerializeField] private PlayerSpell spell;
+    [SerializeField] private BaseSpell spell;
     [SerializeField] private Camera _camera;
 
     Vector3 _aimVector;
@@ -16,15 +16,25 @@ public class TestPlayer : MonoBehaviour
         GetAimVector();
         transform.LookAt(transform.position + _aimVector);
 
-        //if (Input.GetMouseButtonDown(0))
-        //{
-        //    spell.OnAttackDown();
-        //}
+        if (Input.GetMouseButtonDown(0))
+        {
+            spell.OnAttackDown();
+        }
 
-        //if (Input.GetMouseButtonUp(0))
-        //{
-        //    spell.OnAttackUp();
-        //}
+        if (Input.GetMouseButtonUp(0))
+        {
+            spell.OnAttackUp();
+        }
+
+        if (Input.GetButtonDown("Pause"))
+        {
+            spell.CanFire = !spell.CanFire;
+        }
+    }
+
+    public void TestThing()
+    {
+        Debug.Log("asdfasdfas");
     }
 
     private void GetAimVector()

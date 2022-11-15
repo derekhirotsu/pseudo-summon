@@ -11,6 +11,9 @@ public abstract class BaseSpell : MonoBehaviour
 
     protected ObjectPool _pool;
 
+    protected bool _isFiring = false;
+    public bool CanFire = true;
+
     protected virtual void Awake()
     {
         _pool = GetComponent<ObjectPool>();

@@ -185,6 +185,11 @@ public class BossController : MonoBehaviour
         }
     }
 
+    public void BeginCast()
+    {
+        Debug.Log("asdfasdfas");
+    }
+
     private IEnumerator FiringCoroutine() {
         while (canFire) {
 

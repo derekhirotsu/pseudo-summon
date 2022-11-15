@@ -1862,6 +1862,31 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!1 &735204059 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7371243993206142165, guid: 800662da85873c7418b9feef3cee5586, type: 3}
+  m_PrefabInstance: {fileID: 7371243992290105481}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &735204065
+Animator:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 735204059}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: a6ad176bc298bbc419567cdf7cdd7cd6, type: 3}
+  m_Controller: {fileID: 9100000, guid: 2d2454ee70718b24caa35d06e0a5719a, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &782007496
 GameObject:
   m_ObjectHideFlags: 0

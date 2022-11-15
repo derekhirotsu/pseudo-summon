@@ -31,6 +31,11 @@ public class ObjectPool: MonoBehaviour
         return _pool.Find(obj => !obj.activeInHierarchy);
     }
 
+    public List<GameObject> GetPooledObjects()
+    {
+        return _pool.FindAll(obj => !obj.activeInHierarchy);
+    }
+
     private void OnDestroy()
     {
         Destroy(_objectContainer);
