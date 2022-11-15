@@ -1522,9 +1522,29 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -516098083770646512, guid: a6ad176bc298bbc419567cdf7cdd7cd6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: a6ad176bc298bbc419567cdf7cdd7cd6, type: 3}
       propertyPath: m_Name
       value: miffedWizard (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: a6ad176bc298bbc419567cdf7cdd7cd6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1258342769581953660, guid: a6ad176bc298bbc419567cdf7cdd7cd6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7036213049465896255, guid: a6ad176bc298bbc419567cdf7cdd7cd6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9173996636323502957, guid: a6ad176bc298bbc419567cdf7cdd7cd6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 5866666021909216657, guid: a6ad176bc298bbc419567cdf7cdd7cd6, type: 3}
