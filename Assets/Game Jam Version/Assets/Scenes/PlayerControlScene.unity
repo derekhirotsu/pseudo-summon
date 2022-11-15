@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53d02ac2b7f91d540852a161e9a526e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  firstPlay: 0
+  firstPlay: 1
   swapper: {fileID: 1399516124}
   countdownMenu: {fileID: 312837150}
   boundsMenu: {fileID: 815584442}
@@ -10487,6 +10487,10 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 786610724, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
       propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2102354845, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3410058615019836407, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
