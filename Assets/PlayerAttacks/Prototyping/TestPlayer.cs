@@ -5,11 +5,18 @@ using UnityEngine;
 
 public class TestPlayer : MonoBehaviour
 {
-    //[SerializeField] private PlayerSpell spell;
-    [SerializeField] private BaseSpell spell;
     [SerializeField] private Camera _camera;
 
+    [SerializeField] private List<BaseSpell> _spells;
+
     Vector3 _aimVector;
+    BaseSpell _currentSpell;
+    int _currentSpellIndex = 0;
+
+    private void Start()
+    {
+        _currentSpell = _spells[_currentSpellIndex];
+    }
 
     private void Update()
     {
@@ -18,23 +25,30 @@ public class TestPlayer : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            spell.OnAttackDown();
+            _currentSpell.OnAttackDown();
         }
 
         if (Input.GetMouseButtonUp(0))
         {
-            spell.OnAttackUp();
+            _currentSpell.OnAttackUp();
         }
 
         if (Input.GetButtonDown("Pause"))
         {
-            spell.CanFire = !spell.CanFire;
+            _currentSpell.CanFire = !_currentSpell.CanFire;
         }
-    }
 
-    public void TestThing()
-    {
-        Debug.Log("asdfasdfas");
+        if (Input.GetButtonDown("Roll"))
+        {
+            _currentSpellIndex++;
+
+            if (_currentSpellIndex >= _spells.Count)
+            {
+                _currentSpellIndex = 0;
+            }
+            _currentSpell.OnAttackUp();
+            _currentSpell = _spells[_currentSpellIndex];
+        }
     }
 
     private void GetAimVector()

@@ -1,8 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.EventSystems.EventTrigger;
 
 public class PooledPlayerBullet : MonoBehaviour
 {
@@ -49,19 +46,5 @@ public class PooledPlayerBullet : MonoBehaviour
     public void SetLayerMask(LayerMask mask)
     {
         _mask = mask;
-    }
-}
-
-public class BulletCollisionEvent : EventArgs
-{
-    private Collider _trigger;
-    public Collider Trigger
-    {
-        get { return _trigger; }
-    }
-
-    public BulletCollisionEvent(Collider collider)
-    {
-        _trigger = collider;
     }
 }

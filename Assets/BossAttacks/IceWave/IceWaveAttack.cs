@@ -39,11 +39,13 @@ public class IceWaveAttack : BaseSpell
     public override void OnAttackDown()
     {
         _isFiring = true;
+        //vfx_iceShardCastObject.SetActive(true);
     }
 
     public override void OnAttackUp()
     {
         _isFiring = false;
+        //vfx_iceShardCastObject.SetActive(false);
     }
 
     protected override void Start()
@@ -66,6 +68,7 @@ public class IceWaveAttack : BaseSpell
         if (SpawnInstance(transform.position, transform.rotation)) {
             _fireCooldown = _fireInterval;
             _audio.PlaySound(iceWaveFireSfx);
+            //Instantiate(vfx_iceShardCast, autoWindupOrb.transform);
         }
     }
 

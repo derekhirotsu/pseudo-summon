@@ -190,6 +190,13 @@ public class BossController : MonoBehaviour
         Debug.Log("asdfasdfas");
     }
 
+    //BaseSpell currentSpell;
+
+    //private void CastSpell()
+    //{
+    //    currentSpell.OnAttackDown();
+    //}
+
     private IEnumerator FiringCoroutine() {
         while (canFire) {
 
@@ -198,11 +205,13 @@ public class BossController : MonoBehaviour
             int result = Random.Range(0, 4);
 
             switch(result) {
-                case 0: 
+                case 0:
+                    vfx_missileCastObject.SetActive(true);
                     _audio.PlaySound(autoAttackChargeSfx);
                     Instantiate(vfx_missileWindup, autoWindupOrb.transform);
                     yield return new WaitForSeconds(0.5f);
                     yield return StartCoroutine(MissileBarrage());
+                    vfx_missileCastObject.SetActive(false);
                     break;
 
                 case 1:
@@ -220,10 +229,12 @@ public class BossController : MonoBehaviour
                     break;
 
                 case 3:
+                    vfx_iceShardCastObject.SetActive(true);
                     _audio.PlaySound(autoAttackChargeSfx);
                     Instantiate(vfx_iceShardWindup, autoWindupOrb.transform);
                     yield return new WaitForSeconds(0.5f);
                     yield return StartCoroutine(IceWaveVolley());
+                    vfx_iceShardCastObject.SetActive(false);
                     break;
             }
 
@@ -259,7 +270,6 @@ public class BossController : MonoBehaviour
     private IEnumerator IceWaveVolley() {
         WaitForSeconds volleyInterval = new WaitForSeconds(1f);
 
-        vfx_iceShardCastObject.SetActive(true);
         for (int i = 0; i < 4; i++) {
             _audio.PlaySound(iceWaveFireSfx);
             Instantiate(vfx_iceShardCast, autoWindupOrb.transform);
@@ -268,19 +278,16 @@ public class BossController : MonoBehaviour
             }
             yield return volleyInterval;
         }
-        vfx_iceShardCastObject.SetActive(false);
     }
 
     private IEnumerator MissileBarrage() {
         WaitForSeconds barrageInterval = new WaitForSeconds(0.08f);
-
-        vfx_missileCastObject.SetActive(true);
+    
         for (int i = 0; i < 60; i++) {
             Fire(magicMissile, Vector3.zero, Vector3.zero, 0.8f);
             _audio.PlaySound(missileBarrageFireSfx);
             yield return barrageInterval;
         }
-        vfx_missileCastObject.SetActive(false);
     }
 
     private IEnumerator LariatBurst() {
