@@ -10574,10 +10574,6 @@ PrefabInstance:
       value: 0.15
       objectReference: {fileID: 0}
     - target: {fileID: 5607425763507169837, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
-      propertyPath: busterChargeVFX
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 5607425763507169837, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
       propertyPath: playerRollSpeed
       value: 22
       objectReference: {fileID: 0}
