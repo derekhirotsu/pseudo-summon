@@ -8219,7 +8219,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5636988843764427216, guid: f62f4d1e630b588498e5876694ab2ecb, type: 3}
       propertyPath: m_Name
-      value: Music
+      value: MusicManager
       objectReference: {fileID: 0}
     - target: {fileID: 5636988843764427218, guid: f62f4d1e630b588498e5876694ab2ecb, type: 3}
       propertyPath: m_RootOrder
