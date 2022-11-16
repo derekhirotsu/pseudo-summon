@@ -6,9 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Game Jam Version/Assets/Scenes/StartScene.unity
+    path: Assets/Scenes/StartScene.unity
     guid: 24c60af11db47ec4ab9eea465d907fc4
   - enabled: 1
-    path: Assets/Game Jam Version/Assets/Scenes/PlayerControlScene.unity
+    path: Assets/Scenes/PlayerControlScene.unity
     guid: f6d56fba5a683cc47954eb4fdc088566
   m_configObjects: {}
