@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using PseudoSummon.Audio;
+using System;
+using PseudoSummon;
 
 public class PlayerController : MonoBehaviour
 {
@@ -236,8 +238,8 @@ public class PlayerController : MonoBehaviour
             hitstopCoroutine = HitStop(0.03f);
             StartCoroutine(hitstopCoroutine);
 
-
-            UI_ScoreTracker.Instance.AddScore(200, multiply: true);
+            GameManager.Instance.AddScore(200, true);
+            //UI_ScoreTracker.Instance.AddScore(200, multiply: true);
         }
     }
 
@@ -510,6 +512,8 @@ public class PlayerController : MonoBehaviour
         GameObject busterEffect = Instantiate(busterFireVFX, transform);
         PlayerBusterAttack newBuster = Instantiate(busterPrefab, transform).GetComponent<PlayerBusterAttack>();
         newBuster.SetTargetLayer(targetLayer);
+
+        newBuster.SetCallback(() => Debug.Log("it worked!"));
 
         // Start Fire effects
         animator.Play("BusterFire");

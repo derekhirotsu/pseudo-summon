@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,7 +17,14 @@ public class PlayerBusterAttack : MonoBehaviour
     [SerializeField] protected List<Collider> triggerList;
 
     Vector3 direction;
-    // Start is called before the first frame update
+
+    public Action CallbackTest;
+
+    public void SetCallback(Action callback)
+    {
+        CallbackTest = callback;
+    }
+
     void Start()
     {
         triggerList = new List<Collider>();
@@ -52,6 +60,8 @@ public class PlayerBusterAttack : MonoBehaviour
             GameObject particle = Instantiate(optionalDeathParticle, this.transform.position, this.transform.rotation);
             Destroy(particle, 0.8f);
         }
+
+        CallbackTest = null;
     }
 
     void OnTriggerEnter(Collider entity) {
@@ -78,6 +88,9 @@ public class PlayerBusterAttack : MonoBehaviour
     }
 
     public void DamageAllCollisions() {
+
+        CallbackTest?.Invoke();
+
         foreach (Collider target in triggerList) {
             if (target == null) {
                 continue;

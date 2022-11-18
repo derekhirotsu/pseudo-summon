@@ -6,27 +6,28 @@ using UnityEngine.UI;
 public class UI_HealthTracker : MonoBehaviour
 {
     protected HealthTracker tracker;
-    [SerializeField] Text trackerText;
+    [SerializeField] private Text trackerText;
     [SerializeField] protected string trackerMessage = "Health: ";
 
-    void Start() {
-        // trackerText = this.GetComponent<Text>();
-
+    private void Start()
+    {
         GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
 
-        if (players.Length > 0) {
+        if (players.Length > 0)
+        {
             tracker = players[0].GetComponent<HealthTracker>();
         }
-        
-        if (tracker == null) {
+
+        if (tracker == null)
+        {
             this.gameObject.SetActive(false);
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if (tracker.CurrentHealth <= 0) {
+        if (tracker.CurrentHealth <= 0)
+        {
             this.gameObject.SetActive(false);
         }
 

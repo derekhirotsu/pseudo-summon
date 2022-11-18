@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using PseudoSummon;
 
 public class PlayerCanvas : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class PlayerCanvas : MonoBehaviour
     [SerializeField] protected CanvasGroup pauseUI;
     [SerializeField] protected CanvasGroup optionsUI;
     [SerializeField] protected CanvasGroup mainUI;
+    [SerializeField] private GameObject _playerHud;
 
     [SerializeField] protected TMP_Text endTitle;
     [SerializeField] protected TMP_Text endMessage;
@@ -20,7 +22,8 @@ public class PlayerCanvas : MonoBehaviour
     
     public void DisplayDeathUI(bool won = false) {
 
-        mainUI.alpha = 0f;
+        //mainUI.alpha = 0f;
+        _playerHud.SetActive(false);
 
         if (won) {
             // Win text
@@ -37,15 +40,17 @@ public class PlayerCanvas : MonoBehaviour
             endButton.text = "Retry";
         }
 
-        finalScoreText.text = "Final Score : - " + UI_ScoreTracker.Instance.Score + " - ";
-        
+        //finalScoreText.text = "Final Score : - " + UI_ScoreTracker.Instance.Score + " - ";
+        finalScoreText.text = "Final Score : - " + GameManager.Instance.GetScore() + " - ";
+
         deathUI.gameObject.SetActive(true);
     }
 
     public void DisplayPauseUI() {
 
         pauseText.text = "PAUSED";
-        mainUI.alpha = 0f;
+        //mainUI.alpha = 0f;
+        _playerHud.SetActive(false);
         pauseUI.gameObject.SetActive(true);
     }
 
@@ -54,7 +59,8 @@ public class PlayerCanvas : MonoBehaviour
     }
 
     public void HidePauseUI() {
-        mainUI.alpha = 1f;
+        //mainUI.alpha = 1f;
+        _playerHud.SetActive(true);
         pauseUI.gameObject.SetActive(false);
     }
 
