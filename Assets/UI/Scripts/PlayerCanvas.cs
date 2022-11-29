@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
@@ -10,8 +8,8 @@ public class PlayerCanvas : MonoBehaviour
     [SerializeField] protected CanvasGroup deathUI;
     [SerializeField] protected CanvasGroup pauseUI;
     [SerializeField] protected CanvasGroup optionsUI;
-    [SerializeField] protected CanvasGroup mainUI;
     [SerializeField] private GameObject _playerHud;
+    [SerializeField] private GameOverMenu _gameOverMenu;
 
     [SerializeField] protected TMP_Text endTitle;
     [SerializeField] protected TMP_Text endMessage;
@@ -19,73 +17,62 @@ public class PlayerCanvas : MonoBehaviour
     [SerializeField] protected TMP_Text finalScoreText;
     [SerializeField] protected TMP_Text scoreTipText;
     [SerializeField] protected TMP_Text pauseText;
-    
-    public void DisplayDeathUI(bool won = false) {
 
-        //mainUI.alpha = 0f;
+    public void DisplayDeathUI(bool won = false)
+    {
         _playerHud.SetActive(false);
+        _gameOverMenu.gameObject.SetActive(true);
 
-        if (won) {
-            // Win text
-            endTitle.text = "Vanquished!";
-            endMessage.text = "Your Resurrection was Achieved";
-            endButton.text = "Once More!";
 
-            scoreTipText.gameObject.SetActive(true);
-
-        } else {
-            // Lose text
-            endTitle.text = "Banished...";
-            endMessage.text = "Your Resurrection was Denied";
-            endButton.text = "Retry";
+        if (won)
+        {
+            _gameOverMenu.DisplayMenuWin(GameManager.Instance.GetScore());
         }
-
-        //finalScoreText.text = "Final Score : - " + UI_ScoreTracker.Instance.Score + " - ";
-        finalScoreText.text = "Final Score : - " + GameManager.Instance.GetScore() + " - ";
-
-        deathUI.gameObject.SetActive(true);
+        else
+        {
+            _gameOverMenu.DisplayMenuLose(GameManager.Instance.GetScore());
+        }
     }
 
-    public void DisplayPauseUI() {
+    public void DisplayPauseUI()
+    {
 
         pauseText.text = "PAUSED";
-        //mainUI.alpha = 0f;
         _playerHud.SetActive(false);
         pauseUI.gameObject.SetActive(true);
     }
 
-    public void UpdatePauseUI() {
-        pauseText.text = "Resuming...";
-    }
-
-    public void HidePauseUI() {
-        //mainUI.alpha = 1f;
+    public void HidePauseUI()
+    {
         _playerHud.SetActive(true);
         pauseUI.gameObject.SetActive(false);
     }
 
-    public void LoadScene(string name) {
+    public void LoadScene(string name)
+    {
         SceneManager.LoadScene(name);
     }
 
-    public void QuitToMenu() {
+    public void QuitToMenu()
+    {
         HideOptionsUI();
         HidePauseUI();
         LoadScene("StartScene");
     }
 
-    public void QuitGame() {
+    public void QuitGame()
+    {
         Application.Quit();
     }
 
-    public void DisplayOptionsUI() {
-        // HidePauseUI();
+    public void DisplayOptionsUI()
+    {
         optionsUI.gameObject.SetActive(true);
     }
 
-    public void HideOptionsUI() {
+    public void HideOptionsUI()
+    {
         optionsUI.gameObject.SetActive(false);
-        // DisplayPauseUI();
     }
 
 }

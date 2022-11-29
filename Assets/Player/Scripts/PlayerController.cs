@@ -12,7 +12,6 @@ public class PlayerController : MonoBehaviour
     private HealthTracker health;
 
     [Header("Util")]
-    [SerializeField] protected PlayerCanvas UI;
     [SerializeField] protected HealthTracker bossHealth;
     [SerializeField] protected CameraHolder camHolder;
 
@@ -99,7 +98,7 @@ public class PlayerController : MonoBehaviour
     protected Vector3 movementVector;
     protected Vector3 aimVector;
 
-    private bool isPaused = false;
+    public bool IsPaused = false;
 
     [Header("Player Audio")]
     [SerializeField] private SoundFile playerHitSfx;
@@ -116,6 +115,11 @@ public class PlayerController : MonoBehaviour
     private AudioProvider _audio;
     private InputProvider _input;
     private PlayerMovement _movement;
+
+    public bool CanDie = true;
+
+    public Action PausePressed;
+    public Action PlayerDied;
 
     #region UnityFunctions
 
@@ -143,8 +147,8 @@ public class PlayerController : MonoBehaviour
         _input.OnRoll -= OnRoll;
         _input.OnSecondaryFire -= OnBuster;
         _input.OnPause -= OnPause;
-        _input.OnPrimaryFireDown += OnPrimaryFireDown;
-        _input.OnPrimaryFireUp += OnPrimaryFireUp;
+        _input.OnPrimaryFireDown -= OnPrimaryFireDown;
+        _input.OnPrimaryFireUp -= OnPrimaryFireUp;
     }
 
     private void Update()
@@ -152,7 +156,7 @@ public class PlayerController : MonoBehaviour
         CheckPlayerHit();
         CheckBossHit();
 
-        if (!isPaused)
+        if (!IsPaused)
         {
             fireCooldown -= Time.deltaTime;
 
@@ -163,15 +167,10 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (health.HealthPercentage <= 0f && bossHealth.HealthPercentage > 0f)
+        if (health.HealthPercentage <= 0f && CanDie)
         {
             Die();
             return;
-        }
-
-        if (bossHealth.HealthPercentage <= 0f)
-        {
-            UI.DisplayDeathUI(won: true);
         }
 
         if (!rolling)
@@ -181,11 +180,6 @@ public class PlayerController : MonoBehaviour
         else
         {
             _movement.Move(movementVector, PlayerMoveSpeed * 0.3f * Time.fixedDeltaTime);
-        }
-
-        if (bossHealth.CurrentHealth == 0)
-        {
-            enabled = false;
         }
     }
 
@@ -239,7 +233,6 @@ public class PlayerController : MonoBehaviour
             StartCoroutine(hitstopCoroutine);
 
             GameManager.Instance.AddScore(200, true);
-            //UI_ScoreTracker.Instance.AddScore(200, multiply: true);
         }
     }
 
@@ -269,7 +262,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnRoll()
     {
-        if (rollCoroutine != null || !canStillRollOutOfBuster || isPaused)
+        if (rollCoroutine != null || !canStillRollOutOfBuster || IsPaused)
         {
             return;
         }
@@ -378,31 +371,7 @@ public class PlayerController : MonoBehaviour
             StopCoroutine(hitstopCoroutine);
         }
 
-        if (isPaused)
-        {
-            Unpause();
-        }
-        else
-        {
-            Pause();
-        }
-    }
-
-    public void Pause()
-    {
-        Music.Instance.SetLowPassFilterEnabled(true);
-        Time.timeScale = 0f;
-        isPaused = true;
-        UI.DisplayPauseUI();
-    }
-
-    public void Unpause()
-    {
-        Music.Instance.SetLowPassFilterEnabled(false);
-        isPaused = false;
-        Time.timeScale = 1f;
-        UI.HidePauseUI();
-        UI.HideOptionsUI();
+        PausePressed?.Invoke();
     }
 
     #endregion
@@ -420,7 +389,7 @@ public class PlayerController : MonoBehaviour
     }
 
     private void StartPrimaryFire() {
-        if (UI_TutorialOnFirstPlay.Instance.FirstPlay || rolling || busterInProgress || isPaused)
+        if (UI_TutorialOnFirstPlay.Instance.FirstPlay || rolling || busterInProgress || IsPaused)
         {
             return;
         }
@@ -477,7 +446,7 @@ public class PlayerController : MonoBehaviour
     #region HandleBuster
     private void OnBuster()
     {
-        if (UI_TutorialOnFirstPlay.Instance.FirstPlay || rolling || !BusterCharged() || busterInProgress || isPaused)
+        if (UI_TutorialOnFirstPlay.Instance.FirstPlay || rolling || !BusterCharged() || busterInProgress || IsPaused)
         {
             return;
         }
@@ -578,9 +547,10 @@ public class PlayerController : MonoBehaviour
         hitBox.enabled = false;
 
         _audio.StopSound();
-        UI.DisplayDeathUI(won: false);
 
         enabled = false;
         gameObject.SetActive(false);
+
+        PlayerDied?.Invoke();
     }
 }
