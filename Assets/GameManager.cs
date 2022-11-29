@@ -44,12 +44,15 @@ namespace PseudoSummon
             _playerController.PlayerDied += OnPlayerDied;
             _playerController.PausePressed += OnPausePressed;
             _bossController.BossDied += OnBossDied;
+            UI_TutorialOnFirstPlay.Instance.TutorialEnded += OnTutorialEnded;
         }
 
         private void OnDisable()
         {
             _playerController.PlayerDied -= OnPlayerDied;
+            _playerController.PausePressed -= OnPausePressed;
             _bossController.BossDied -= OnBossDied;
+            UI_TutorialOnFirstPlay.Instance.TutorialEnded -= OnTutorialEnded;
         }
 
         public void AddScore(int amount, bool increaseMultiplier = false)
@@ -66,30 +69,18 @@ namespace PseudoSummon
         {
             _playerHud.SetPlayer(_player);
             _bossHealthDisplay.SetBossNameDisplayText("Malakor the Miffed"); // This could be set by some boss info if we had more bosses.
+
+            if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
+            {
+                UI_TutorialOnFirstPlay.Instance.StartTutorialSequence();
+                _playerController.InTutorial = true;
+            } 
         }
 
         private void Update()
         {
-            _scoreTracker.DecayScore = _playerHealth.CurrentHealth > 0 && _bossHealth.CurrentHealth > 0;
             _scoreDisplay.SetScoreText(_scoreTracker.Score);
             _bossHealthDisplay.SetHealthPercent(_bossHealth.HealthPercentage);
-        }
-
-        private void OnPlayerDied()
-        {
-            UI.DisplayDeathUI(false);
-        }
-
-        private void OnPausePressed()
-        {
-            if (_playerController.IsPaused)
-            {
-                Unpause();
-            }
-            else
-            {
-                Pause();
-            }
         }
 
         public void Pause()
@@ -106,16 +97,39 @@ namespace PseudoSummon
             Time.timeScale = 1f;
             _playerController.IsPaused = false;
             UI.HidePauseUI();
-            UI.HideOptionsUI();
+        }
+
+        private void OnTutorialEnded()
+        {
+            _playerController.InTutorial = false;
+        }
+
+        private void OnPlayerDied()
+        {
+            _scoreTracker.DecayScore = false;
+            UI.DisplayDeathUI(false);
         }
 
         private void OnBossDied()
         {
+            _scoreTracker.DecayScore = false;
             _playerController.CanDie = false;
             UI.DisplayDeathUI(true);
             _playerController.enabled = false;
 
             AddScore(Mathf.RoundToInt(_scoreTracker.Score * _playerHealth.HealthPercentage));
+        }
+
+        private void OnPausePressed()
+        {
+            if (_playerController.IsPaused)
+            {
+                Unpause();
+            }
+            else
+            {
+                Pause();
+            }
         }
     }
 }

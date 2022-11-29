@@ -1,7 +1,7 @@
 using UnityEngine;
 using TMPro;
 
-namespace PseudoSummon
+namespace PseudoSummon.UI
 {
     public class GameOverMenu : MonoBehaviour
     {
