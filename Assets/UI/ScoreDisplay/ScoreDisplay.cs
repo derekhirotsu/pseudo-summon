@@ -9,7 +9,6 @@ namespace PseudoSummon.UI
 
         public void SetScoreText(int value)
         {
-            Debug.Log(value.ToString());
             _scoreText.text = value.ToString();
         }
     }

@@ -105,7 +105,6 @@ public class BossController : MonoBehaviour
         }
         else
         {
-            // SLERP DAT QUATERNION
             yRotation = 0;
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(0, 0, 0), 0.01f);
         }
@@ -161,10 +160,13 @@ public class BossController : MonoBehaviour
         }
     }
 
+    public System.Action BossDied;
+
     public void Die() {
         StopAllCoroutines();
 
         gameObject.SetActive(false);
+        BossDied?.Invoke();
     }
 
     private IEnumerator RandomizeRotationSpeed() {

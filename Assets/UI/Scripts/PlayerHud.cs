@@ -1,9 +1,8 @@
-using PseudoSummon.UI;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace PseudoSummon
+namespace PseudoSummon.UI
 {
     public class PlayerHud : MonoBehaviour
     {
