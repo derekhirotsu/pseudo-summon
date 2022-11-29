@@ -6776,7 +6776,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Paused
+  m_text: PAUSED
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 9c5ef031ce846264f9dc058a6fa7406e, type: 2}
   m_sharedMaterial: {fileID: -2738418934146756559, guid: 9c5ef031ce846264f9dc058a6fa7406e, type: 2}
@@ -7782,16 +7782,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc1c3d430b3b8d949bd3e6fba46dd87d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deathUI: {fileID: 0}
   pauseUI: {fileID: 2142083802}
   optionsUI: {fileID: 24882414}
   _playerHud: {fileID: 75597048}
   _gameOverMenu: {fileID: 866518572}
-  endTitle: {fileID: 0}
-  endMessage: {fileID: 0}
-  endButton: {fileID: 0}
-  finalScoreText: {fileID: 0}
-  scoreTipText: {fileID: 0}
   pauseText: {fileID: 933381588}
 --- !u!114 &1399516124
 MonoBehaviour:

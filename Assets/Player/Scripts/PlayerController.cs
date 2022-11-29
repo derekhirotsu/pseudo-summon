@@ -482,7 +482,7 @@ public class PlayerController : MonoBehaviour
         PlayerBusterAttack newBuster = Instantiate(busterPrefab, transform).GetComponent<PlayerBusterAttack>();
         newBuster.SetTargetLayer(targetLayer);
 
-        newBuster.SetCallback(() => Debug.Log("it worked!"));
+        //newBuster.SetCallback(() => Debug.Log("it worked!"));
 
         // Start Fire effects
         animator.Play("BusterFire");

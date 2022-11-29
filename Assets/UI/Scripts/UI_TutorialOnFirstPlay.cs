@@ -13,8 +13,6 @@ public class UI_TutorialOnFirstPlay : MonoBehaviour
 
     [Header("UI References")]
     [SerializeField] protected UI_MenuSwapper swapper;
-
-
     [SerializeField] protected UI_Countdown countdownMenu;
     [SerializeField] protected UI_BoundsTutorial boundsMenu;
 
@@ -41,8 +39,6 @@ public class UI_TutorialOnFirstPlay : MonoBehaviour
     }
 
     protected IEnumerator FirstPlayCoroutine() {
-        Debug.Log("Tutorial sequence starts.");
-
         // yield return new WaitForSecondsRealtime(7.3f);
 
         // Display Bound UI
@@ -55,7 +51,6 @@ public class UI_TutorialOnFirstPlay : MonoBehaviour
         countdownMenu.StartCountdown(4, 2f /4);
         yield return new WaitForSecondsRealtime(2.05f);
 
-        Debug.Log("Tutorial sequence ends.");
         swapper.ToggleMenu(1);
 
         firstPlay = false;

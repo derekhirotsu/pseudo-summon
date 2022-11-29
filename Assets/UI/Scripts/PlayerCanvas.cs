@@ -5,18 +5,10 @@ using PseudoSummon;
 
 public class PlayerCanvas : MonoBehaviour
 {
-    [SerializeField] protected CanvasGroup deathUI;
     [SerializeField] protected CanvasGroup pauseUI;
     [SerializeField] protected CanvasGroup optionsUI;
     [SerializeField] private GameObject _playerHud;
     [SerializeField] private GameOverMenu _gameOverMenu;
-
-    [SerializeField] protected TMP_Text endTitle;
-    [SerializeField] protected TMP_Text endMessage;
-    [SerializeField] protected TMP_Text endButton;
-    [SerializeField] protected TMP_Text finalScoreText;
-    [SerializeField] protected TMP_Text scoreTipText;
-    [SerializeField] protected TMP_Text pauseText;
 
     public void DisplayDeathUI(bool won = false)
     {
@@ -36,8 +28,6 @@ public class PlayerCanvas : MonoBehaviour
 
     public void DisplayPauseUI()
     {
-
-        pauseText.text = "PAUSED";
         _playerHud.SetActive(false);
         pauseUI.gameObject.SetActive(true);
     }
