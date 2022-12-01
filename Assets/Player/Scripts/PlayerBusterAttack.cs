@@ -1,3 +1,5 @@
+using PseudoSummon;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,7 +18,14 @@ public class PlayerBusterAttack : MonoBehaviour
     [SerializeField] protected List<Collider> triggerList;
 
     Vector3 direction;
-    // Start is called before the first frame update
+
+    //public Action CallbackTest;
+
+    //public void SetCallback(Action callback)
+    //{
+    //    CallbackTest = callback;
+    //}
+
     void Start()
     {
         triggerList = new List<Collider>();
@@ -52,58 +61,75 @@ public class PlayerBusterAttack : MonoBehaviour
             GameObject particle = Instantiate(optionalDeathParticle, this.transform.position, this.transform.rotation);
             Destroy(particle, 0.8f);
         }
+
+        //CallbackTest = null;
     }
 
-    void OnTriggerEnter(Collider entity) {
+    void OnTriggerEnter(Collider entity)
+    {
         // Bullet hit target
-        if (targetLayer.Contains(entity.gameObject.layer) && !triggerList.Contains(entity)) {
+        if (targetLayer.Contains(entity.gameObject.layer) && !triggerList.Contains(entity))
+        {
 
             triggerList.Add(entity);
         }
     }
 
-    void OnTriggerExit(Collider entity) {
+    void OnTriggerExit(Collider entity)
+    {
         // Bullet hit target
-        if (triggerList.Contains(entity)) {
+        if (triggerList.Contains(entity))
+        {
 
             triggerList.Remove(entity);
         }
     }
 
-    void OnTriggerStay(Collider entity) {
-        if (targetLayer.Contains(entity.gameObject.layer) && !triggerList.Contains(entity)) {
+    void OnTriggerStay(Collider entity)
+    {
+        if (targetLayer.Contains(entity.gameObject.layer) && !triggerList.Contains(entity))
+        {
 
             triggerList.Add(entity);
         }
     }
 
-    public void DamageAllCollisions() {
-        foreach (Collider target in triggerList) {
-            if (target == null) {
+    public void DamageAllCollisions()
+    {
+        //CallbackTest?.Invoke();
+
+        foreach (Collider target in triggerList)
+        {
+            if (target == null)
+            {
                 continue;
             }
             HealthTracker health = target.gameObject.GetComponent<HealthTracker>();
-            if (health != null) {
-                if (health.HealthPercentage < 0.2f) {
+            if (health != null)
+            {
+                if (health.HealthPercentage < 0.2f)
+                {
                     health.ModifyHealth(-bulletDamage * 2);
-                } else {
+                }
+                else
+                {
                     health.ModifyHealth(-bulletDamage);
                 }
 
-                UI_ScoreTracker.Instance.AddScore(8000, multiply:true);
-                
-            } else {
-                Debug.LogWarning(this.name + " collided with " + target.name + ", but no health component was found.");
+                GameManager.Instance.AddScore(8000, true);
+
             }
         }
     }
 
-    public void SetDirection(Vector3 newDirection) {
+    public void SetDirection(Vector3 newDirection)
+    {
         direction = newDirection;
         directionSet = true;
     }
 
-    public void SetTargetLayer(LayerMask targets) {
+    public void SetTargetLayer(LayerMask targets)
+    {
         targetLayer = targets;
     }
 }
