@@ -7,101 +7,23 @@ namespace PseudoSummon
 {
     public class PlayerController : MonoBehaviour
     {
-        private CapsuleCollider hitBox;
-        private Animator animator;
-
-        [SerializeField] private GameObject _playerModel;
-        private Health _health;
-        public Health Health { get { return _health; } }
-
         [Header("Util")]
-        //[SerializeField] protected HealthTracker bossHealth;
         [SerializeField] private Health _bossHealth; // Temp fix for decoupling boss - switching to new Health system using event based hit dectection rather than update loop.
         [SerializeField] protected CameraHolder camHolder;
+        [SerializeField] private PlayerStats _stats;
 
-        // Serialized fields
-        [Header("Player Movement")]
-        [SerializeField] protected float baseMoveSpeed = 5f;
-        protected float speedMod = 1f;
-        public float PlayerMoveSpeed { get { return baseMoveSpeed * speedMod; } }
-        [SerializeField] protected float playerRollSpeed = 8f;
-        [SerializeField] protected float playerRollTime = 0.5f;
-        [SerializeField] protected float rollIFrameDuration = 0.4f;
-        protected bool rolling = false;
-
-        [Header("Player Combat")]
+        [Header("Player Visuals")]
         [SerializeField] protected GameObject dashParticle;
+        [SerializeField] private GameObject _playerModel;
 
-        // Primary
         [Header("Primary Attack")]
         [SerializeField] protected GameObject bulletPrefab;
-        [SerializeField] protected LayerMask targetLayer;
-        [SerializeField] protected float firingInterval = 0;
         protected float fireCooldown = 0f;
 
-        // Secondary
         [Header("Secondary Attack")]
         [SerializeField] protected GameObject busterPrefab;
         [SerializeField] protected GameObject busterChargeVFX;
         [SerializeField] protected GameObject busterFireVFX;
-        [SerializeField] protected int hitsToCharge = 30; // 30
-        [SerializeField] protected float windDownTime = 3f;
-        protected bool busterInProgress = false;
-        protected bool canStillRollOutOfBuster = true;
-        protected float busterCooldown = 0;
-        protected bool BusterOnCooldown { get { return busterCooldown > 0; } }
-        protected int currentHitCharge = 0;
-        protected void AddToCharge()
-        {
-            if (currentHitCharge < hitsToCharge && !BusterOnCooldown)
-            {
-                currentHitCharge++;
-                if (currentHitCharge == hitsToCharge)
-                {
-                    _audio.PlaySound(playerSecondaryReadySfx);
-                }
-            }
-        }
-
-        public float BusterFillPercent
-        {
-            get
-            {
-                if (!BusterOnCooldown)
-                {
-                    return (float)(hitsToCharge - currentHitCharge) / hitsToCharge;
-                }
-                else
-                {
-                    return (float)(windDownTime - busterCooldown) / windDownTime;
-                }
-
-            }
-        }
-
-        public bool BusterCharged()
-        {
-            return currentHitCharge == hitsToCharge;
-        }
-
-        protected IEnumerator rollCoroutine;
-        protected IEnumerator shootCoroutine;
-        protected IEnumerator invincibilityCoroutine;
-        protected IEnumerator hitstopCoroutine;
-        protected IEnumerator HitStop(float duration)
-        {
-            Time.timeScale = 0f;
-
-            yield return new WaitForSecondsRealtime(duration);
-
-            hitstopCoroutine = null;
-            Time.timeScale = 1f;
-        }
-
-        protected Vector3 movementVector;
-        protected Vector3 aimVector;
-
-        public bool IsPaused = false;
 
         [Header("Player Audio")]
         [SerializeField] private SoundFile playerHitSfx;
@@ -115,12 +37,72 @@ namespace PseudoSummon
         // player in future refactoring. See note on CheckBossHit method below.
         [SerializeField] private SoundFile bossHitSfx;
 
+        protected bool BusterOnCooldown { get { return busterCooldown > 0; } }
+        protected void AddToCharge()
+        {
+            if (currentHitCharge < _stats.BusterHitsToCharge && !BusterOnCooldown)
+            {
+                currentHitCharge++;
+                if (currentHitCharge == _stats.BusterHitsToCharge)
+                {
+                    _audio.PlaySound(playerSecondaryReadySfx);
+                }
+            }
+        }
+
+        public float BusterFillPercent
+        {
+            get
+            {
+                if (!BusterOnCooldown)
+                {
+                    return (float)(_stats.BusterHitsToCharge - currentHitCharge) / _stats.BusterHitsToCharge;
+                }
+
+                return (float)(_stats.BusterCooldownTime - busterCooldown) / _stats.BusterCooldownTime;
+            }
+        }
+
+        public bool BusterCharged { get { return currentHitCharge == _stats.BusterHitsToCharge; } }
+
+        protected IEnumerator rollCoroutine;
+        protected IEnumerator shootCoroutine;
+        protected IEnumerator invincibilityCoroutine;
+        protected IEnumerator hitstopCoroutine;
+        protected IEnumerator HitStop(float duration)
+        {
+            Time.timeScale = 0f;
+
+            yield return new WaitForSecondsRealtime(duration);
+
+            Time.timeScale = 1f;
+            hitstopCoroutine = null;
+        }
+
+        private CapsuleCollider hitBox;
+        private Animator animator;
         private AudioProvider _audio;
         private InputProvider _input;
         private PlayerMovement _movement;
+        private Health _health;
+        public Health Health { get { return _health; } }
 
+        public bool IsPaused = false;
         public bool CanDie = true;
         public bool InTutorial = false;
+
+        private bool _isRolling = false;
+        private bool _isBusterInProgress = false;
+        private bool _canStillRollOutOfBuster = true;
+
+        private float speedModifier = 1f;
+        public float PlayerMoveSpeed { get { return _stats.BaseMoveSpeed * speedModifier; } }
+
+        private float busterCooldown = 0;
+        private int currentHitCharge = 0;
+
+        private Vector3 movementVector;
+        private Vector3 aimVector;
 
         public Action PausePressed;
         public Action PlayerDied;
@@ -161,8 +143,6 @@ namespace PseudoSummon
 
         private void Update()
         {
-            //CheckBossHit();
-
             if (!IsPaused)
             {
                 fireCooldown -= Time.deltaTime;
@@ -170,18 +150,9 @@ namespace PseudoSummon
                 HandleMovementInput();
                 HandleAimingInput();
             }
-        }
 
-        private void FixedUpdate()
-        {
-            if (!rolling)
-            {
-                _movement.Move(movementVector, PlayerMoveSpeed * Time.fixedDeltaTime);
-            }
-            else
-            {
-                _movement.Move(movementVector, PlayerMoveSpeed * 0.3f * Time.fixedDeltaTime);
-            }
+            float moveSpeed = _isRolling ? PlayerMoveSpeed * 0.3f * Time.deltaTime : PlayerMoveSpeed * Time.deltaTime;
+            _movement.Move(movementVector, moveSpeed);
         }
 
         #endregion
@@ -207,327 +178,6 @@ namespace PseudoSummon
             GameManager.Instance.AddScore(200, true);
         }
 
-        // TODO: This could be refactored to decouple player from boss.
-        // TODO: Refactor this with new Health Class - Add player attack script
-        //void CheckBossHit()
-        //{
-        //    // Boss taking damage check
-        //    if (bossHealth.TookDamage(consumeTrigger: true))
-        //    {
-        //        _audio.PlaySound(bossHitSfx);
-        //        AddToCharge();
-
-        //        camHolder.CameraShake(0.1f, 0.1f);
-
-        //        if (hitstopCoroutine != null)
-        //        {
-        //            StopCoroutine(hitstopCoroutine);
-        //        }
-
-        //        hitstopCoroutine = HitStop(0.03f);
-        //        StartCoroutine(hitstopCoroutine);
-
-        //        GameManager.Instance.AddScore(200, true);
-        //    }
-        //}
-
-        #endregion
-
-        #region InputHandling
-
-        private void HandleMovementInput()
-        {
-            movementVector = _input.GetMovementVector();
-        }
-
-        private void HandleAimingInput()
-        {
-            if (hitstopCoroutine != null)
-            {
-                return;
-            }
-
-            aimVector = _input.GetAimVector(transform.position);
-            transform.LookAt(transform.position + aimVector);
-        }
-
-        #endregion
-
-        #region HandleRoll
-
-        private void OnRoll()
-        {
-            if (rollCoroutine != null || !canStillRollOutOfBuster || IsPaused)
-            {
-                return;
-            }
-
-            // Invincibility rolls shouldn't interrupt damage rolls
-            if (invincibilityCoroutine != null)
-            {
-                StopCoroutine(invincibilityCoroutine);
-            }
-
-            invincibilityCoroutine = GoInvincible(rollIFrameDuration);
-            StartCoroutine(invincibilityCoroutine);
-
-            if (busterInProgress)
-            {
-                busterChargeVFX.SetActive(false);
-                busterInProgress = false;
-                _audio.StopSound();
-            }
-
-            if (shootCoroutine != null)
-            {
-                StopCoroutine(shootCoroutine);
-                shootCoroutine = null;
-            }
-
-            Vector3 rollVector = movementVector;
-
-            if (rollVector.magnitude <= Mathf.Epsilon)
-            {
-                rollVector = aimVector;
-            }
-
-            rollCoroutine = Roll(rollVector);
-            StartCoroutine(rollCoroutine);
-        }
-
-        protected IEnumerator Roll(Vector3 rollDirection)
-        {
-            _audio.PlaySound(playerDodgeSfx);
-
-            GameObject dashObject = Instantiate(dashParticle, transform.position, Quaternion.LookRotation(-rollDirection, Vector3.up));
-
-            AnimateRoll(rollDirection);
-
-            rolling = true;
-
-            // Initial parameters
-            speedMod = 1f;
-
-            // Section of the roll in the air
-            float rollInAirTimer = playerRollTime;
-            while (rollInAirTimer > 0)
-            {
-                _movement.Move(rollDirection, playerRollSpeed * Time.fixedDeltaTime);
-                rollInAirTimer -= Time.fixedDeltaTime;
-
-                yield return new WaitForFixedUpdate();
-            }
-
-            rolling = false;
-
-            speedMod = 0.3f;
-
-            // Section of the roll on the ground
-            float rollOnGroundTimer = playerRollTime * 2.0f;
-            while (rollOnGroundTimer > 0)
-            {
-                _movement.Move(rollDirection, playerRollSpeed * rollOnGroundTimer * Time.fixedDeltaTime);
-                rollOnGroundTimer -= Time.fixedDeltaTime;
-
-                yield return new WaitForFixedUpdate();
-            }
-
-            Destroy(dashObject);
-
-            rollCoroutine = null;
-            if (shootCoroutine == null)
-            {
-                speedMod = 1f;
-            }
-        }
-
-        private void AnimateRoll(Vector3 rollDirection)
-        {
-            float dashX = transform.InverseTransformDirection(rollDirection).normalized.x;
-            float dashZ = transform.InverseTransformDirection(rollDirection).normalized.z;
-            animator.SetFloat("dashX", dashX);
-            animator.SetFloat("dashZ", dashZ);
-            animator.Play("Dash");
-        }
-
-        #endregion
-
-        #region HandlePause
-
-        private void OnPause()
-        {
-            if (InTutorial)
-            {
-                return;
-            }
-
-            if (hitstopCoroutine != null)
-            {
-                StopCoroutine(hitstopCoroutine);
-            }
-
-            PausePressed?.Invoke();
-        }
-
-        #endregion
-
-        #region HandlePrimaryFire
-
-        private void OnPrimaryFireDown()
-        {
-            StartPrimaryFire();
-        }
-
-        private void OnPrimaryFireUp()
-        {
-            StopPrimaryFire();
-        }
-
-        private void StartPrimaryFire()
-        {
-            if (InTutorial || rolling || busterInProgress || IsPaused)
-            {
-                return;
-            }
-
-            speedMod = 0.5f;
-            shootCoroutine = ShootCoroutine();
-            StartCoroutine(shootCoroutine);
-        }
-
-        private void StopPrimaryFire()
-        {
-            if (shootCoroutine != null)
-            {
-                StopCoroutine(shootCoroutine);
-            }
-
-            speedMod = 1f;
-        }
-
-        private IEnumerator ShootCoroutine()
-        {
-            while (true)
-            {
-                if (fireCooldown <= 0 && rollCoroutine == null)
-                {
-                    SpawnBullet(transform.position + aimVector, aimVector);
-                    AnimatePrimaryFire();
-
-                    _audio.PlaySound(playerShootSfx);
-                    fireCooldown = firingInterval;
-                }
-
-                yield return new WaitForEndOfFrame();
-            }
-        }
-
-        private void SpawnBullet(Vector3 origin, Vector3 direction)
-        {
-            TestBullet newBullet = Instantiate(bulletPrefab, origin, Quaternion.identity).GetComponent<TestBullet>();
-            newBullet.SetTargetLayer(targetLayer);
-            newBullet.SetDirection(direction);
-        }
-
-        private void AnimatePrimaryFire()
-        {
-            // Toggle Left/Right firing animation.
-            animator.SetBool("FireSide", !animator.GetBool("FireSide"));
-
-            animator.Play("Fire");
-        }
-
-        #endregion
-
-        #region HandleBuster
-        private void OnBuster()
-        {
-            if (InTutorial || rolling || !BusterCharged() || busterInProgress || IsPaused)
-            {
-                return;
-            }
-
-            if (shootCoroutine != null)
-            {
-                StopCoroutine(shootCoroutine);
-            }
-
-            shootCoroutine = Buster();
-            StartCoroutine(shootCoroutine);
-        }
-
-        protected IEnumerator Buster()
-        {
-            // Update state
-            busterInProgress = true;
-            canStillRollOutOfBuster = true;
-            speedMod = 0.5f;
-
-            // Start charge effects
-            busterChargeVFX.SetActive(true);
-            animator.Play("BusterCharge");
-            _audio.PlaySound(playerSecondaryChargeSfx);
-
-            yield return new WaitForSeconds(2.5f);
-
-            // Update state
-            canStillRollOutOfBuster = false;
-
-            // Create buster projectile
-            GameObject busterEffect = Instantiate(busterFireVFX, transform);
-            PlayerBusterAttack newBuster = Instantiate(busterPrefab, transform).GetComponent<PlayerBusterAttack>();
-            newBuster.SetTargetLayer(targetLayer);
-
-            //newBuster.SetCallback(() => Debug.Log("it worked!"));
-
-            // Start Fire effects
-            animator.Play("BusterFire");
-            _audio.PlaySound(playerSecondaryFireSfx);
-
-            // This is necessary to allow the collider a chance to register the hit
-            yield return new WaitForSecondsRealtime(0.05f);
-
-            busterEffect.transform.parent = null;
-            newBuster.transform.parent = null;
-
-            // Big hitstop and hit registration
-            camHolder.CameraFlash(10f);
-            camHolder.CameraShake(0.8f, 1.0f);
-            if (hitstopCoroutine != null)
-            {
-                StopCoroutine(hitstopCoroutine);
-            }
-            hitstopCoroutine = HitStop(0.7f);
-            StartCoroutine(hitstopCoroutine);
-
-            yield return new WaitForSecondsRealtime(0.7f);
-
-            newBuster.DamageAllCollisions();
-
-            busterChargeVFX.SetActive(false);
-
-            StartCoroutine(CooldownBuster());
-
-            // Update state
-            currentHitCharge = 0;
-            busterInProgress = false;
-            canStillRollOutOfBuster = true;
-            shootCoroutine = null;
-            speedMod = 1f;
-        }
-
-        protected IEnumerator CooldownBuster()
-        {
-            busterCooldown = windDownTime;
-            while (BusterOnCooldown)
-            {
-                busterCooldown -= Time.fixedDeltaTime;
-                yield return new WaitForFixedUpdate();
-            }
-        }
-
-        #endregion
-
         private void OnCurrentHealthModified(int difference)
         {
             if (difference > 0)
@@ -547,7 +197,7 @@ namespace PseudoSummon
         private void DamageResponse()
         {
             _audio.PlaySound(playerHitSfx);
-                
+
             if (invincibilityCoroutine != null)
             {
                 StopCoroutine(invincibilityCoroutine);
@@ -599,5 +249,302 @@ namespace PseudoSummon
 
             PlayerDied?.Invoke();
         }
+
+        #endregion
+
+        #region InputHandling
+
+        private void HandleMovementInput()
+        {
+            movementVector = _input.GetMovementVector();
+        }
+
+        private void HandleAimingInput()
+        {
+            if (hitstopCoroutine != null)
+            {
+                return;
+            }
+
+            aimVector = _input.GetAimVector(transform.position);
+            transform.LookAt(transform.position + aimVector);
+        }
+
+        #endregion
+
+        #region HandleRoll
+
+        private void OnRoll()
+        {
+            if (rollCoroutine != null || !_canStillRollOutOfBuster || IsPaused)
+            {
+                return;
+            }
+
+            // Invincibility rolls shouldn't interrupt damage rolls
+            if (invincibilityCoroutine != null)
+            {
+                StopCoroutine(invincibilityCoroutine);
+            }
+
+            invincibilityCoroutine = GoInvincible(_stats.RollInvincibilityDuration);
+            StartCoroutine(invincibilityCoroutine);
+
+            if (_isBusterInProgress)
+            {
+                busterChargeVFX.SetActive(false);
+                _isBusterInProgress = false;
+                _audio.StopSound();
+            }
+
+            if (shootCoroutine != null)
+            {
+                StopCoroutine(shootCoroutine);
+                shootCoroutine = null;
+            }
+
+            Vector3 rollVector = movementVector;
+
+            if (rollVector.magnitude <= Mathf.Epsilon)
+            {
+                rollVector = aimVector;
+            }
+
+            rollCoroutine = Roll(rollVector);
+            StartCoroutine(rollCoroutine);
+        }
+
+        protected IEnumerator Roll(Vector3 rollDirection)
+        {
+            _audio.PlaySound(playerDodgeSfx);
+
+            GameObject dashObject = Instantiate(dashParticle, transform.position, Quaternion.LookRotation(-rollDirection, Vector3.up));
+
+            AnimateRoll(rollDirection);
+
+            _isRolling = true;
+
+            // Initial parameters
+            speedModifier = 1f;
+
+            // Section of the roll in the air
+            float rollInAirTimer = _stats.RollDuration;
+            while (rollInAirTimer > 0)
+            {
+                _movement.Move(rollDirection, _stats.RollSpeed * Time.fixedDeltaTime);
+                rollInAirTimer -= Time.fixedDeltaTime;
+
+                yield return new WaitForFixedUpdate();
+            }
+
+            _isRolling = false;
+
+            speedModifier = 0.3f;
+
+            // Section of the roll on the ground
+            float rollOnGroundTimer = _stats.RollDuration * 2.0f;
+            while (rollOnGroundTimer > 0)
+            {
+                _movement.Move(rollDirection, _stats.RollSpeed * rollOnGroundTimer * Time.fixedDeltaTime);
+                rollOnGroundTimer -= Time.fixedDeltaTime;
+
+                yield return new WaitForFixedUpdate();
+            }
+
+            Destroy(dashObject);
+
+            rollCoroutine = null;
+            if (shootCoroutine == null)
+            {
+                speedModifier = 1f;
+            }
+        }
+
+        private void AnimateRoll(Vector3 rollDirection)
+        {
+            float dashX = transform.InverseTransformDirection(rollDirection).normalized.x;
+            float dashZ = transform.InverseTransformDirection(rollDirection).normalized.z;
+            animator.SetFloat("dashX", dashX);
+            animator.SetFloat("dashZ", dashZ);
+            animator.Play("Dash");
+        }
+
+        #endregion
+
+        #region HandlePause
+
+        private void OnPause()
+        {
+            if (InTutorial)
+            {
+                return;
+            }
+
+            if (hitstopCoroutine != null)
+            {
+                StopCoroutine(hitstopCoroutine);
+            }
+
+            PausePressed?.Invoke();
+        }
+
+        #endregion
+
+        #region HandlePrimaryFire
+
+        private void OnPrimaryFireDown()
+        {
+            StartPrimaryFire();
+        }
+
+        private void OnPrimaryFireUp()
+        {
+            StopPrimaryFire();
+        }
+
+        private void StartPrimaryFire()
+        {
+            if (InTutorial || _isRolling || _isBusterInProgress || IsPaused)
+            {
+                return;
+            }
+
+            speedModifier = 0.5f;
+            shootCoroutine = ShootCoroutine();
+            StartCoroutine(shootCoroutine);
+        }
+
+        private void StopPrimaryFire()
+        {
+            if (shootCoroutine != null)
+            {
+                StopCoroutine(shootCoroutine);
+            }
+
+            speedModifier = 1f;
+        }
+
+        private IEnumerator ShootCoroutine()
+        {
+            while (true)
+            {
+                if (fireCooldown <= 0 && rollCoroutine == null)
+                {
+                    SpawnBullet(transform.position + aimVector, aimVector);
+                    AnimatePrimaryFire();
+
+                    _audio.PlaySound(playerShootSfx);
+                    fireCooldown = _stats.PrimaryFireAttackInterval;
+                }
+
+                yield return new WaitForEndOfFrame();
+            }
+        }
+
+        private void SpawnBullet(Vector3 origin, Vector3 direction)
+        {
+            TestBullet newBullet = Instantiate(bulletPrefab, origin, Quaternion.identity).GetComponent<TestBullet>();
+            newBullet.SetTargetLayer(_stats.AttackCollisionMask);
+            newBullet.SetDirection(direction);
+        }
+
+        private void AnimatePrimaryFire()
+        {
+            // Toggle Left/Right firing animation.
+            animator.SetBool("FireSide", !animator.GetBool("FireSide"));
+
+            animator.Play("Fire");
+        }
+
+        #endregion
+
+        #region HandleBuster
+        private void OnBuster()
+        {
+            if (InTutorial || _isRolling || !BusterCharged || _isBusterInProgress || IsPaused)
+            {
+                return;
+            }
+
+            if (shootCoroutine != null)
+            {
+                StopCoroutine(shootCoroutine);
+            }
+
+            shootCoroutine = Buster();
+            StartCoroutine(shootCoroutine);
+        }
+
+        protected IEnumerator Buster()
+        {
+            // Update state
+            _isBusterInProgress = true;
+            _canStillRollOutOfBuster = true;
+            speedModifier = 0.5f;
+
+            // Start charge effects
+            busterChargeVFX.SetActive(true);
+            animator.Play("BusterCharge");
+            _audio.PlaySound(playerSecondaryChargeSfx);
+
+            yield return new WaitForSeconds(2.5f);
+
+            // Update state
+            _canStillRollOutOfBuster = false;
+
+            // Create buster projectile
+            GameObject busterEffect = Instantiate(busterFireVFX, transform);
+            PlayerBusterAttack newBuster = Instantiate(busterPrefab, transform).GetComponent<PlayerBusterAttack>();
+            newBuster.SetTargetLayer(_stats.AttackCollisionMask);
+
+            //newBuster.SetCallback(() => Debug.Log("it worked!"));
+
+            // Start Fire effects
+            animator.Play("BusterFire");
+            _audio.PlaySound(playerSecondaryFireSfx);
+
+            // This is necessary to allow the collider a chance to register the hit
+            yield return new WaitForSecondsRealtime(0.05f);
+
+            busterEffect.transform.parent = null;
+            newBuster.transform.parent = null;
+
+            // Big hitstop and hit registration
+            camHolder.CameraFlash(10f);
+            camHolder.CameraShake(0.8f, 1.0f);
+            if (hitstopCoroutine != null)
+            {
+                StopCoroutine(hitstopCoroutine);
+            }
+            hitstopCoroutine = HitStop(0.7f);
+            StartCoroutine(hitstopCoroutine);
+
+            yield return new WaitForSecondsRealtime(0.7f);
+
+            newBuster.DamageAllCollisions();
+
+            busterChargeVFX.SetActive(false);
+
+            StartCoroutine(CooldownBuster());
+
+            // Update state
+            currentHitCharge = 0;
+            _isBusterInProgress = false;
+            _canStillRollOutOfBuster = true;
+            shootCoroutine = null;
+            speedModifier = 1f;
+        }
+
+        protected IEnumerator CooldownBuster()
+        {
+            busterCooldown = _stats.BusterCooldownTime;
+            while (BusterOnCooldown)
+            {
+                busterCooldown -= Time.fixedDeltaTime;
+                yield return new WaitForFixedUpdate();
+            }
+        }
+
+        #endregion
     }
 }
