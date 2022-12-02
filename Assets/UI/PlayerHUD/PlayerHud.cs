@@ -6,8 +6,8 @@ namespace PseudoSummon.UI
 {
     public class PlayerHud : MonoBehaviour
     {
-        private HealthTracker _playerHealth;
         private PlayerController _playerController;
+        private Health _playerHealth;
 
         [SerializeField] private PlayerHealthDisplay _playerHealthDisplay;
         [SerializeField] private PlayerBusterMeter _playerBusterMeter;
@@ -28,8 +28,8 @@ namespace PseudoSummon.UI
 
         public void SetPlayer(GameObject playerObject)
         {
-            _playerHealth = playerObject.GetComponent<HealthTracker>();
             _playerController = playerObject.GetComponent<PlayerController>();
+            _playerHealth = _playerController.Health;
 
             if (_playerHealth == null || _playerController == null)
             {
