@@ -9,10 +9,14 @@ namespace PseudoSummon
     {
         private CapsuleCollider hitBox;
         private Animator animator;
-        private HealthTracker health;
+
+        [SerializeField] private GameObject _playerModel;
+        private Health _health;
+        public Health Health { get { return _health; } }
 
         [Header("Util")]
-        [SerializeField] protected HealthTracker bossHealth;
+        //[SerializeField] protected HealthTracker bossHealth;
+        [SerializeField] private Health _bossHealth; // Temp fix for decoupling boss - switching to new Health system using event based hit dectection rather than update loop.
         [SerializeField] protected CameraHolder camHolder;
 
         // Serialized fields
@@ -125,12 +129,12 @@ namespace PseudoSummon
 
         private void Awake()
         {
-            health = GetComponent<HealthTracker>();
             hitBox = GetComponent<CapsuleCollider>();
             animator = GetComponent<Animator>();
             _audio = GetComponent<AudioProvider>();
             _input = GetComponent<InputProvider>();
             _movement = GetComponent<PlayerMovement>();
+            _health = GetComponent<Health>();
         }
 
         private void OnEnable()
@@ -140,6 +144,8 @@ namespace PseudoSummon
             _input.OnPause += OnPause;
             _input.OnPrimaryFireDown += OnPrimaryFireDown;
             _input.OnPrimaryFireUp += OnPrimaryFireUp;
+            _health.CurrentHealthModified += OnCurrentHealthModified;
+            _bossHealth.CurrentHealthModified += OnBossHit;
         }
 
         private void OnDisable()
@@ -149,12 +155,13 @@ namespace PseudoSummon
             _input.OnPause -= OnPause;
             _input.OnPrimaryFireDown -= OnPrimaryFireDown;
             _input.OnPrimaryFireUp -= OnPrimaryFireUp;
+            _health.CurrentHealthModified -= OnCurrentHealthModified;
+            _bossHealth.CurrentHealthModified -= OnBossHit;
         }
 
         private void Update()
         {
-            CheckPlayerHit();
-            CheckBossHit();
+            //CheckBossHit();
 
             if (!IsPaused)
             {
@@ -167,12 +174,6 @@ namespace PseudoSummon
 
         private void FixedUpdate()
         {
-            if (health.HealthPercentage <= 0f && CanDie)
-            {
-                Die();
-                return;
-            }
-
             if (!rolling)
             {
                 _movement.Move(movementVector, PlayerMoveSpeed * Time.fixedDeltaTime);
@@ -186,55 +187,49 @@ namespace PseudoSummon
         #endregion
 
         #region HitDetection
-        void CheckPlayerHit()
+
+        // TODO: This could be refactored to decouple player from boss.
+        private void OnBossHit(int difference)
         {
-            // Me taking damage check
-            if (health.TookDamage(consumeTrigger: true))
+            _audio.PlaySound(bossHitSfx);
+            AddToCharge();
+
+            camHolder.CameraShake(0.1f, 0.1f);
+
+            if (hitstopCoroutine != null)
             {
-                _audio.PlaySound(playerHitSfx);
-
-                if (invincibilityCoroutine != null)
-                {
-                    StopCoroutine(invincibilityCoroutine);
-                }
-                invincibilityCoroutine = GoInvincible(1f);
-                StartCoroutine(invincibilityCoroutine);
-
-                // Big hitstop
-                camHolder.CameraShake(0.35f, 0.35f);
-
-                if (hitstopCoroutine != null)
-                {
-                    StopCoroutine(hitstopCoroutine);
-                }
-
-                hitstopCoroutine = HitStop(0.3f);
-                StartCoroutine(hitstopCoroutine);
+                StopCoroutine(hitstopCoroutine);
             }
+
+            hitstopCoroutine = HitStop(0.03f);
+            StartCoroutine(hitstopCoroutine);
+
+            GameManager.Instance.AddScore(200, true);
         }
 
         // TODO: This could be refactored to decouple player from boss.
-        void CheckBossHit()
-        {
-            // Boss taking damage check
-            if (bossHealth.TookDamage(consumeTrigger: true))
-            {
-                _audio.PlaySound(bossHitSfx);
-                AddToCharge();
+        // TODO: Refactor this with new Health Class - Add player attack script
+        //void CheckBossHit()
+        //{
+        //    // Boss taking damage check
+        //    if (bossHealth.TookDamage(consumeTrigger: true))
+        //    {
+        //        _audio.PlaySound(bossHitSfx);
+        //        AddToCharge();
 
-                camHolder.CameraShake(0.1f, 0.1f);
+        //        camHolder.CameraShake(0.1f, 0.1f);
 
-                if (hitstopCoroutine != null)
-                {
-                    StopCoroutine(hitstopCoroutine);
-                }
+        //        if (hitstopCoroutine != null)
+        //        {
+        //            StopCoroutine(hitstopCoroutine);
+        //        }
 
-                hitstopCoroutine = HitStop(0.03f);
-                StartCoroutine(hitstopCoroutine);
+        //        hitstopCoroutine = HitStop(0.03f);
+        //        StartCoroutine(hitstopCoroutine);
 
-                GameManager.Instance.AddScore(200, true);
-            }
-        }
+        //        GameManager.Instance.AddScore(200, true);
+        //    }
+        //}
 
         #endregion
 
@@ -533,6 +528,45 @@ namespace PseudoSummon
 
         #endregion
 
+        private void OnCurrentHealthModified(int difference)
+        {
+            if (difference > 0)
+            {
+                return;
+            }
+
+            if (_health.CurrentHealth <= 0 && CanDie)
+            {
+                Die();
+                return;
+            }
+
+            DamageResponse();
+        }
+
+        private void DamageResponse()
+        {
+            _audio.PlaySound(playerHitSfx);
+                
+            if (invincibilityCoroutine != null)
+            {
+                StopCoroutine(invincibilityCoroutine);
+            }
+
+            invincibilityCoroutine = GoInvincible(1f);
+            StartCoroutine(invincibilityCoroutine);
+
+            camHolder.CameraShake(0.35f, 0.35f);
+
+            if (hitstopCoroutine != null)
+            {
+                StopCoroutine(hitstopCoroutine);
+            }
+
+            hitstopCoroutine = HitStop(0.3f);
+            StartCoroutine(hitstopCoroutine);
+        }
+
         protected IEnumerator GoInvincible(float duration)
         {
             hitBox.enabled = false;
@@ -545,12 +579,23 @@ namespace PseudoSummon
 
         public void Die()
         {
-            hitBox.enabled = false;
+            StopAllCoroutines();
 
             _audio.StopSound();
+            _audio.PlaySound(playerHitSfx);
 
+            _playerModel.SetActive(false);
             enabled = false;
-            gameObject.SetActive(false);
+
+            camHolder.CameraShake(0.35f, 0.35f);
+
+            if (hitstopCoroutine != null)
+            {
+                StopCoroutine(hitstopCoroutine);
+            }
+
+            hitstopCoroutine = HitStop(0.3f);
+            StartCoroutine(hitstopCoroutine);
 
             PlayerDied?.Invoke();
         }

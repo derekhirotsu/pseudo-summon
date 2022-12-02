@@ -2,53 +2,50 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// TODO: Refactor this; It can be abstracted along with TestBullet into a base projectile class
-public class FireballProjectile : MonoBehaviour
+namespace PseudoSummon
 {
-    [SerializeField] int bulletDamage = 1;
-    [SerializeField] LayerMask wallCollisionLayer;
-    [SerializeField] protected LayerMask targetLayer;
-    Vector3 direction;
-    float projectileSpeed;
-
-    void OnTriggerEnter(Collider entity)
+    // TODO: Refactor this; It can be abstracted along with TestBullet into a base projectile class
+    public class FireballProjectile : MonoBehaviour
     {
-        // Bullet hit wall
-        if (wallCollisionLayer.Contains(entity.gameObject.layer))
-        {
-            Destroy(this.gameObject);
-        }
+        [SerializeField] int bulletDamage = 1;
+        [SerializeField] LayerMask wallCollisionLayer;
+        [SerializeField] protected LayerMask targetLayer;
+        Vector3 direction;
+        float projectileSpeed;
 
-        // Bullet hit target
-        if (targetLayer.Contains(entity.gameObject.layer))
+        void OnTriggerEnter(Collider entity)
         {
-            HealthTracker health = entity.gameObject.GetComponent<HealthTracker>();
-
-            if (health != null)
+            if (wallCollisionLayer.Contains(entity.gameObject.layer))
             {
-                health.ModifyHealth(-bulletDamage);
-            }
-            else
-            {
-                Debug.LogWarning(this.name + " collided with " + entity.name + ", but no health component was found.");
+                Destroy(gameObject);
             }
 
-            Destroy(this.gameObject);
+            if (targetLayer.Contains(entity.gameObject.layer))
+            {
+
+                Health entityHealth = entity.gameObject.GetComponent<Health>();
+                if (entityHealth != null)
+                {
+                    entityHealth.ModifyCurrentHealth(-bulletDamage);
+                }
+
+                Destroy(gameObject);
+            }
         }
-    }
 
-    void FixedUpdate()
-    {
-        this.transform.position += (direction.normalized * this.projectileSpeed * Time.fixedDeltaTime);
-    }
+        void FixedUpdate()
+        {
+            transform.position += direction.normalized * projectileSpeed * Time.fixedDeltaTime;
+        }
 
-    public void SetDirection(Vector3 newDirection)
-    {
-        this.direction = newDirection;
-    }
+        public void SetDirection(Vector3 newDirection)
+        {
+            direction = newDirection;
+        }
 
-    public void SetSpeed(float speed)
-    {
-        this.projectileSpeed = speed;
+        public void SetSpeed(float speed)
+        {
+            projectileSpeed = speed;
+        }
     }
 }

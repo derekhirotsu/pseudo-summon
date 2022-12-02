@@ -43,6 +43,11 @@ namespace PseudoSummon.UI
             _menuSwapper.ToggleMenu(1);
         }
 
+        public void LoadScene(string sceneName)
+        {
+            SceneManager.LoadScene(sceneName);
+        }
+
         public void QuitToMenu()
         {
             SceneManager.LoadScene("StartScene");

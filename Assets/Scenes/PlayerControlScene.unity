@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53d02ac2b7f91d540852a161e9a526e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  firstPlay: 0
+  firstPlay: 1
   swapper: {fileID: 1399516124}
   countdownMenu: {fileID: 312837150}
   boundsMenu: {fileID: 815584442}
@@ -552,17 +552,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 3164988130517552632, guid: cffb4f9a743648e40acb7b2b1a1b7660, type: 3}
   m_PrefabInstance: {fileID: 3164988131487555172}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &255521463 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3923174538641554746, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
-  m_PrefabInstance: {fileID: 5607425762974674611}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1352917709}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 430f529a7375bd54494f94157eb00ecf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &270366480 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2686553837558590663, guid: 3cbf1ee042a64d5409dc3a427e8ade45, type: 3}
@@ -6554,15 +6543,15 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3164988130517552633, guid: cffb4f9a743648e40acb7b2b1a1b7660, type: 3}
   m_PrefabInstance: {fileID: 3164988131487555172}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1778860156 stripped
+--- !u!114 &1778860162 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7371243991920564469, guid: 800662da85873c7418b9feef3cee5586, type: 3}
+  m_CorrespondingSourceObject: {fileID: 3400957988075814439, guid: 800662da85873c7418b9feef3cee5586, type: 3}
   m_PrefabInstance: {fileID: 7371243992290105481}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 430f529a7375bd54494f94157eb00ecf, type: 3}
+  m_Script: {fileID: 11500000, guid: 6ffafa03394a94848823e9af87f4c50a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!4 &1780612408 stripped
@@ -7077,11 +7066,11 @@ PrefabInstance:
     - target: {fileID: 2686553836750328995, guid: 3cbf1ee042a64d5409dc3a427e8ade45, type: 3}
       propertyPath: bossHealth
       value: 
-      objectReference: {fileID: 1778860156}
+      objectReference: {fileID: 0}
     - target: {fileID: 2686553836750328995, guid: 3cbf1ee042a64d5409dc3a427e8ade45, type: 3}
       propertyPath: playerHealth
       value: 
-      objectReference: {fileID: 255521463}
+      objectReference: {fileID: 0}
     - target: {fileID: 2686553837558590663, guid: 3cbf1ee042a64d5409dc3a427e8ade45, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -7643,6 +7632,10 @@ PrefabInstance:
       value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5607425763507169834, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5607425763507169834, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
       propertyPath: m_TagString
       value: Player
       objectReference: {fileID: 0}
@@ -7661,7 +7654,11 @@ PrefabInstance:
     - target: {fileID: 5607425763507169837, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
       propertyPath: bossHealth
       value: 
-      objectReference: {fileID: 1778860156}
+      objectReference: {fileID: 0}
+    - target: {fileID: 5607425763507169837, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
+      propertyPath: _bossHealth
+      value: 
+      objectReference: {fileID: 1778860162}
     - target: {fileID: 5607425763507169837, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
       propertyPath: busterPrefab
       value: 
@@ -7769,7 +7766,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7371243991920564469, guid: 800662da85873c7418b9feef3cee5586, type: 3}
       propertyPath: maxHealth
-      value: 1
+      value: 250
       objectReference: {fileID: 0}
     - target: {fileID: 7371243993206142164, guid: 800662da85873c7418b9feef3cee5586, type: 3}
       propertyPath: player

@@ -1,3 +1,4 @@
+using PseudoSummon;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,15 +26,10 @@ public class FireFieldProjectile : MonoBehaviour
     {
         if (targetLayer.Contains(entity.gameObject.layer))
         {
-            HealthTracker health = entity.gameObject.GetComponent<HealthTracker>();
-
-            if (health != null)
+            Health entityHealth = entity.gameObject.GetComponent<Health>();
+            if (entityHealth != null)
             {
-                health.ModifyHealth(-bulletDamage);
-            }
-            else
-            {
-                Debug.LogWarning(name + " collided with " + entity.name + ", but no health component was found.");
+                entityHealth.ModifyCurrentHealth(-bulletDamage);
             }
         }
     }

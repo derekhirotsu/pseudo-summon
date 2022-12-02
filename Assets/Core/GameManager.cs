@@ -19,15 +19,11 @@ namespace PseudoSummon
 
         private PlayerController _playerController;
         private BossController _bossController;
-        private HealthTracker _playerHealth;
-        private HealthTracker _bossHealth;
 
         private void Awake()
         {
             _playerController = _player.GetComponent<PlayerController>();
-            _playerHealth = _player.GetComponent<HealthTracker>();
             _bossController = _boss.GetComponent<BossController>();
-            _bossHealth = _boss.GetComponentInChildren<HealthTracker>();
 
             if (Instance == null)
             {
@@ -80,7 +76,7 @@ namespace PseudoSummon
         private void Update()
         {
             _scoreDisplay.SetScoreText(_scoreTracker.Score);
-            _bossHealthDisplay.SetHealthPercent(_bossHealth.HealthPercentage);
+            _bossHealthDisplay.SetHealthPercent(_bossController.Health.CurrentHealthPercent);
         }
 
         public void Pause()
@@ -117,7 +113,8 @@ namespace PseudoSummon
             UI.DisplayDeathUI(true);
             _playerController.enabled = false;
 
-            AddScore(Mathf.RoundToInt(_scoreTracker.Score * _playerHealth.HealthPercentage));
+            //AddScore(Mathf.RoundToInt(_scoreTracker.Score * _playerHealth.HealthPercentage));
+            AddScore(Mathf.RoundToInt(_scoreTracker.Score * _playerController.Health.CurrentHealthPercent));
         }
 
         private void OnPausePressed()
