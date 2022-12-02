@@ -336,14 +336,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f53e0e11e77e784cbfef74fa67e13e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playerModel: {fileID: 905505463223941419}
   _bossHealth: {fileID: 0}
   camHolder: {fileID: 0}
+  _stats: {fileID: 11400000, guid: 5d4a5d8b9a1131847a0618baf0e28128, type: 2}
   baseMoveSpeed: 8
   playerRollSpeed: 22
   playerRollTime: 0.15
   rollIFrameDuration: 0.4
   dashParticle: {fileID: 7477765099212387787, guid: 0773a2f72e4c6d14e86ad059be509a2a, type: 3}
+  _playerModel: {fileID: 905505463223941419}
   bulletPrefab: {fileID: 2063947483988415485, guid: 109b112fa000a2e40b13b81e86e53031, type: 3}
   targetLayer:
     serializedVersion: 2
@@ -354,7 +355,6 @@ MonoBehaviour:
   busterFireVFX: {fileID: 3875565099562772278, guid: b49d1e8659c3ebe468481848c7d8bc03, type: 3}
   hitsToCharge: 35
   windDownTime: 2.5
-  IsPaused: 0
   playerHitSfx: {fileID: 11400000, guid: 2b46e1e46c042a344bb6e3f65cf6437b, type: 2}
   playerShootSfx: {fileID: 11400000, guid: bcea55f6b995a6349a6cb57843ebe252, type: 2}
   playerDodgeSfx: {fileID: 11400000, guid: 3956341321d8c8c488ffa90500990918, type: 2}
@@ -362,6 +362,7 @@ MonoBehaviour:
   playerSecondaryChargeSfx: {fileID: 11400000, guid: d4fe3e811887f74468ed4378268a32b2, type: 2}
   playerSecondaryFireSfx: {fileID: 11400000, guid: f24231c600cb6ce498980b1d900cf679, type: 2}
   bossHitSfx: {fileID: 11400000, guid: b4d59fd8b5e1e974184e186f2df48938, type: 2}
+  IsPaused: 0
   CanDie: 1
   InTutorial: 0
 --- !u!82 &951325374121236488

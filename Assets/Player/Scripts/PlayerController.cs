@@ -7,19 +7,12 @@ namespace PseudoSummon
 {
     public class PlayerController : MonoBehaviour
     {
-        private CapsuleCollider hitBox;
-        private Animator animator;
-
-        [SerializeField] private GameObject _playerModel;
-        private Health _health;
-        public Health Health { get { return _health; } }
-
         [Header("Util")]
-        //[SerializeField] protected HealthTracker bossHealth;
         [SerializeField] private Health _bossHealth; // Temp fix for decoupling boss - switching to new Health system using event based hit dectection rather than update loop.
         [SerializeField] protected CameraHolder camHolder;
 
-        // Serialized fields
+        [SerializeField] private PlayerStats _stats;
+
         [Header("Player Movement")]
         [SerializeField] protected float baseMoveSpeed = 5f;
         protected float speedMod = 1f;
@@ -29,17 +22,16 @@ namespace PseudoSummon
         [SerializeField] protected float rollIFrameDuration = 0.4f;
         protected bool rolling = false;
 
-        [Header("Player Combat")]
+        [Header("Player Visuals")]
         [SerializeField] protected GameObject dashParticle;
+        [SerializeField] private GameObject _playerModel;
 
-        // Primary
         [Header("Primary Attack")]
         [SerializeField] protected GameObject bulletPrefab;
         [SerializeField] protected LayerMask targetLayer;
         [SerializeField] protected float firingInterval = 0;
         protected float fireCooldown = 0f;
 
-        // Secondary
         [Header("Secondary Attack")]
         [SerializeField] protected GameObject busterPrefab;
         [SerializeField] protected GameObject busterChargeVFX;
@@ -71,18 +63,12 @@ namespace PseudoSummon
                 {
                     return (float)(hitsToCharge - currentHitCharge) / hitsToCharge;
                 }
-                else
-                {
-                    return (float)(windDownTime - busterCooldown) / windDownTime;
-                }
 
+                return (float)(windDownTime - busterCooldown) / windDownTime;
             }
         }
 
-        public bool BusterCharged()
-        {
-            return currentHitCharge == hitsToCharge;
-        }
+        public bool BusterCharged { get { return currentHitCharge == hitsToCharge; } }
 
         protected IEnumerator rollCoroutine;
         protected IEnumerator shootCoroutine;
@@ -94,14 +80,12 @@ namespace PseudoSummon
 
             yield return new WaitForSecondsRealtime(duration);
 
-            hitstopCoroutine = null;
             Time.timeScale = 1f;
+            hitstopCoroutine = null;
         }
 
         protected Vector3 movementVector;
         protected Vector3 aimVector;
-
-        public bool IsPaused = false;
 
         [Header("Player Audio")]
         [SerializeField] private SoundFile playerHitSfx;
@@ -115,10 +99,15 @@ namespace PseudoSummon
         // player in future refactoring. See note on CheckBossHit method below.
         [SerializeField] private SoundFile bossHitSfx;
 
+        private CapsuleCollider hitBox;
+        private Animator animator;
         private AudioProvider _audio;
         private InputProvider _input;
         private PlayerMovement _movement;
+        private Health _health;
+        public Health Health { get { return _health; } }
 
+        public bool IsPaused = false;
         public bool CanDie = true;
         public bool InTutorial = false;
 
@@ -161,8 +150,6 @@ namespace PseudoSummon
 
         private void Update()
         {
-            //CheckBossHit();
-
             if (!IsPaused)
             {
                 fireCooldown -= Time.deltaTime;
@@ -170,18 +157,9 @@ namespace PseudoSummon
                 HandleMovementInput();
                 HandleAimingInput();
             }
-        }
 
-        private void FixedUpdate()
-        {
-            if (!rolling)
-            {
-                _movement.Move(movementVector, PlayerMoveSpeed * Time.fixedDeltaTime);
-            }
-            else
-            {
-                _movement.Move(movementVector, PlayerMoveSpeed * 0.3f * Time.fixedDeltaTime);
-            }
+            float moveSpeed = rolling ? PlayerMoveSpeed * 0.3f * Time.deltaTime : PlayerMoveSpeed * Time.deltaTime;
+            _movement.Move(movementVector, moveSpeed);
         }
 
         #endregion
@@ -207,29 +185,77 @@ namespace PseudoSummon
             GameManager.Instance.AddScore(200, true);
         }
 
-        // TODO: This could be refactored to decouple player from boss.
-        // TODO: Refactor this with new Health Class - Add player attack script
-        //void CheckBossHit()
-        //{
-        //    // Boss taking damage check
-        //    if (bossHealth.TookDamage(consumeTrigger: true))
-        //    {
-        //        _audio.PlaySound(bossHitSfx);
-        //        AddToCharge();
+        private void OnCurrentHealthModified(int difference)
+        {
+            if (difference > 0)
+            {
+                return;
+            }
 
-        //        camHolder.CameraShake(0.1f, 0.1f);
+            if (_health.CurrentHealth <= 0 && CanDie)
+            {
+                Die();
+                return;
+            }
 
-        //        if (hitstopCoroutine != null)
-        //        {
-        //            StopCoroutine(hitstopCoroutine);
-        //        }
+            DamageResponse();
+        }
 
-        //        hitstopCoroutine = HitStop(0.03f);
-        //        StartCoroutine(hitstopCoroutine);
+        private void DamageResponse()
+        {
+            _audio.PlaySound(playerHitSfx);
 
-        //        GameManager.Instance.AddScore(200, true);
-        //    }
-        //}
+            if (invincibilityCoroutine != null)
+            {
+                StopCoroutine(invincibilityCoroutine);
+            }
+
+            invincibilityCoroutine = GoInvincible(1f);
+            StartCoroutine(invincibilityCoroutine);
+
+            camHolder.CameraShake(0.35f, 0.35f);
+
+            if (hitstopCoroutine != null)
+            {
+                StopCoroutine(hitstopCoroutine);
+            }
+
+            hitstopCoroutine = HitStop(0.3f);
+            StartCoroutine(hitstopCoroutine);
+        }
+
+        protected IEnumerator GoInvincible(float duration)
+        {
+            hitBox.enabled = false;
+
+            yield return new WaitForSeconds(duration);
+
+            hitBox.enabled = true;
+            invincibilityCoroutine = null;
+        }
+
+        public void Die()
+        {
+            StopAllCoroutines();
+
+            _audio.StopSound();
+            _audio.PlaySound(playerHitSfx);
+
+            _playerModel.SetActive(false);
+            enabled = false;
+
+            camHolder.CameraShake(0.35f, 0.35f);
+
+            if (hitstopCoroutine != null)
+            {
+                StopCoroutine(hitstopCoroutine);
+            }
+
+            hitstopCoroutine = HitStop(0.3f);
+            StartCoroutine(hitstopCoroutine);
+
+            PlayerDied?.Invoke();
+        }
 
         #endregion
 
@@ -442,7 +468,7 @@ namespace PseudoSummon
         #region HandleBuster
         private void OnBuster()
         {
-            if (InTutorial || rolling || !BusterCharged() || busterInProgress || IsPaused)
+            if (InTutorial || rolling || !BusterCharged || busterInProgress || IsPaused)
             {
                 return;
             }
@@ -527,77 +553,5 @@ namespace PseudoSummon
         }
 
         #endregion
-
-        private void OnCurrentHealthModified(int difference)
-        {
-            if (difference > 0)
-            {
-                return;
-            }
-
-            if (_health.CurrentHealth <= 0 && CanDie)
-            {
-                Die();
-                return;
-            }
-
-            DamageResponse();
-        }
-
-        private void DamageResponse()
-        {
-            _audio.PlaySound(playerHitSfx);
-                
-            if (invincibilityCoroutine != null)
-            {
-                StopCoroutine(invincibilityCoroutine);
-            }
-
-            invincibilityCoroutine = GoInvincible(1f);
-            StartCoroutine(invincibilityCoroutine);
-
-            camHolder.CameraShake(0.35f, 0.35f);
-
-            if (hitstopCoroutine != null)
-            {
-                StopCoroutine(hitstopCoroutine);
-            }
-
-            hitstopCoroutine = HitStop(0.3f);
-            StartCoroutine(hitstopCoroutine);
-        }
-
-        protected IEnumerator GoInvincible(float duration)
-        {
-            hitBox.enabled = false;
-
-            yield return new WaitForSeconds(duration);
-
-            hitBox.enabled = true;
-            invincibilityCoroutine = null;
-        }
-
-        public void Die()
-        {
-            StopAllCoroutines();
-
-            _audio.StopSound();
-            _audio.PlaySound(playerHitSfx);
-
-            _playerModel.SetActive(false);
-            enabled = false;
-
-            camHolder.CameraShake(0.35f, 0.35f);
-
-            if (hitstopCoroutine != null)
-            {
-                StopCoroutine(hitstopCoroutine);
-            }
-
-            hitstopCoroutine = HitStop(0.3f);
-            StartCoroutine(hitstopCoroutine);
-
-            PlayerDied?.Invoke();
-        }
     }
 }
