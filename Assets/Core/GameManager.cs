@@ -13,9 +13,10 @@ namespace PseudoSummon
         [SerializeField] private BossHealthDisplay _bossHealthDisplay;
         [SerializeField] private ScoreTracker _scoreTracker;
         [SerializeField] private ScoreDisplay _scoreDisplay;
-        [SerializeField] protected PlayerCanvas UI;
+        [SerializeField] private PlayerCanvas UI;
         [SerializeField] private GameObject _player;
         [SerializeField] private GameObject _boss;
+        [SerializeField] private string _bossName; // This could be set by some boss info if we had more bosses.
 
         private PlayerController _playerController;
         private BossController _bossController;
@@ -66,7 +67,7 @@ namespace PseudoSummon
         private void Start()
         {
             _playerHud.SetPlayer(_player);
-            _bossHealthDisplay.SetBossNameDisplayText("Malakor the Miffed"); // This could be set by some boss info if we had more bosses.
+            _bossHealthDisplay.SetBossNameDisplayText(_bossName); 
 
             if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
             {
@@ -114,8 +115,6 @@ namespace PseudoSummon
             _playerController.CanDie = false;
             UI.DisplayDeathUI(true);
             _playerController.enabled = false;
-
-            //AddScore(Mathf.RoundToInt(_scoreTracker.Score * _playerHealth.HealthPercentage));
             AddScore(Mathf.RoundToInt(_scoreTracker.Score * _playerController.Health.CurrentHealthPercent));
         }
 
@@ -133,7 +132,6 @@ namespace PseudoSummon
 
         private void OnScoreModified(int value, bool multiply)
         {
-            Debug.Log("score modified");
             _scoreTracker.AddScore(value, multiply);
         }
     }
