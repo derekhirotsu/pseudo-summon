@@ -227,6 +227,7 @@ namespace PseudoSummon
 
             _playerModel.SetActive(false);
             enabled = false;
+            hitBox.enabled = false;
 
             camHolder.CameraShake(0.35f, 0.35f);
 

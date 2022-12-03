@@ -4,48 +4,23 @@ using UnityEngine;
 
 namespace PseudoSummon
 {
-    // TODO: Refactor this; It can be abstracted along with TestBullet into a base projectile class
-    public class FireballProjectile : MonoBehaviour
+    public class FireballProjectile : Projectile
     {
-        [SerializeField] int bulletDamage = 1;
-        [SerializeField] LayerMask wallCollisionLayer;
-        [SerializeField] protected LayerMask targetLayer;
-        Vector3 direction;
-        float projectileSpeed;
-
-        void OnTriggerEnter(Collider entity)
+        protected override void OnTriggerEnter(Collider entity)
         {
-            if (wallCollisionLayer.Contains(entity.gameObject.layer))
+            if (!collisionMask.Contains(entity.gameObject.layer))
             {
-                Destroy(gameObject);
+                return;
             }
 
-            if (targetLayer.Contains(entity.gameObject.layer))
+            Health entityHealth = entity.gameObject.GetComponent<Health>();
+
+            if (entityHealth)
             {
-
-                Health entityHealth = entity.gameObject.GetComponent<Health>();
-                if (entityHealth != null)
-                {
-                    entityHealth.ModifyCurrentHealth(-bulletDamage);
-                }
-
-                Destroy(gameObject);
+                entityHealth.ModifyCurrentHealth(-damage);
             }
-        }
 
-        void FixedUpdate()
-        {
-            transform.position += direction.normalized * projectileSpeed * Time.fixedDeltaTime;
-        }
-
-        public void SetDirection(Vector3 newDirection)
-        {
-            direction = newDirection;
-        }
-
-        public void SetSpeed(float speed)
-        {
-            projectileSpeed = speed;
+            Destroy(gameObject);
         }
     }
 }
