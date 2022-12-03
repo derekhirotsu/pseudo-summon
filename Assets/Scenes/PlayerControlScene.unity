@@ -5726,6 +5726,7 @@ MonoBehaviour:
   UI: {fileID: 1399516123}
   _player: {fileID: 1352917709}
   _boss: {fileID: 580019986}
+  _bossName: Malakor the Miffed
 --- !u!4 &1058573035
 Transform:
   m_ObjectHideFlags: 0
