@@ -13,7 +13,6 @@ namespace PseudoSummon
         [SerializeField] protected LayerMask targetLayer;
 
         [SerializeField] protected GameObject optionalDeathParticle;
-        protected bool directionSet = false;
 
         // The list of colliders currently inside the trigger
         [SerializeField] protected List<Collider> triggerList;
@@ -103,7 +102,6 @@ namespace PseudoSummon
         public void SetDirection(Vector3 newDirection)
         {
             direction = newDirection;
-            directionSet = true;
         }
 
         public void SetTargetLayer(LayerMask targets)

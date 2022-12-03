@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53d02ac2b7f91d540852a161e9a526e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  firstPlay: 1
+  firstPlay: 0
   swapper: {fileID: 1399516124}
   countdownMenu: {fileID: 312837150}
   boundsMenu: {fileID: 815584442}
@@ -7660,14 +7660,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1778860162}
     - target: {fileID: 5607425763507169837, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
-      propertyPath: busterPrefab
-      value: 
-      objectReference: {fileID: 1575137597709655499, guid: 7c350947f3235b342832e1f0b3290abe, type: 3}
-    - target: {fileID: 5607425763507169837, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
-      propertyPath: dashParticle
-      value: 
-      objectReference: {fileID: 7477765099212387787, guid: 0773a2f72e4c6d14e86ad059be509a2a, type: 3}
-    - target: {fileID: 5607425763507169837, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
       propertyPath: hitsToCharge
       value: 35
       objectReference: {fileID: 0}
@@ -7679,10 +7671,6 @@ PrefabInstance:
       propertyPath: baseMoveSpeed
       value: 8
       objectReference: {fileID: 0}
-    - target: {fileID: 5607425763507169837, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
-      propertyPath: busterFireVFX
-      value: 
-      objectReference: {fileID: 3875565099562772278, guid: b49d1e8659c3ebe468481848c7d8bc03, type: 3}
     - target: {fileID: 5607425763507169837, guid: ad9df5ea70104bd498827a6e8ae59518, type: 3}
       propertyPath: firingInterval
       value: 0.21

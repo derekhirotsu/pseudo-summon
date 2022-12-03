@@ -8,16 +8,15 @@ namespace PseudoSummon
     public class PlayerController : MonoBehaviour
     {
         [Header("Util")]
-        [SerializeField] private Health _bossHealth; // Temp fix for decoupling boss - switching to new Health system using event based hit dectection rather than update loop.
         [SerializeField] protected CameraHolder camHolder;
         [SerializeField] private PlayerStats _stats;
 
         [Header("Player Visuals")]
-        [SerializeField] protected GameObject dashParticle;
         [SerializeField] private GameObject _playerModel;
+        [SerializeField] protected GameObject dashParticle;
 
         [Header("Primary Attack")]
-        [SerializeField] protected GameObject bulletPrefab;
+        [SerializeField] private PrimaryAttackProjectile _primaryAttack;
         protected float fireCooldown = 0f;
 
         [Header("Secondary Attack")]
@@ -32,10 +31,6 @@ namespace PseudoSummon
         [SerializeField] private SoundFile playerSecondaryReadySfx;
         [SerializeField] private SoundFile playerSecondaryChargeSfx;
         [SerializeField] private SoundFile playerSecondaryFireSfx;
-
-        // TODO: This could be moved to boss script once boss is decoupled from
-        // player in future refactoring. See note on CheckBossHit method below.
-        [SerializeField] private SoundFile bossHitSfx;
 
         protected bool BusterOnCooldown { get { return busterCooldown > 0; } }
         protected void AddToCharge()
@@ -106,6 +101,7 @@ namespace PseudoSummon
 
         public Action PausePressed;
         public Action PlayerDied;
+        public Action<int, bool> ScoreModified;
 
         #region UnityFunctions
 
@@ -127,7 +123,6 @@ namespace PseudoSummon
             _input.OnPrimaryFireDown += OnPrimaryFireDown;
             _input.OnPrimaryFireUp += OnPrimaryFireUp;
             _health.CurrentHealthModified += OnCurrentHealthModified;
-            _bossHealth.CurrentHealthModified += OnBossHit;
         }
 
         private void OnDisable()
@@ -138,7 +133,6 @@ namespace PseudoSummon
             _input.OnPrimaryFireDown -= OnPrimaryFireDown;
             _input.OnPrimaryFireUp -= OnPrimaryFireUp;
             _health.CurrentHealthModified -= OnCurrentHealthModified;
-            _bossHealth.CurrentHealthModified -= OnBossHit;
         }
 
         private void Update()
@@ -159,11 +153,10 @@ namespace PseudoSummon
 
         #region HitDetection
 
-        // TODO: This could be refactored to decouple player from boss.
-        private void OnBossHit(int difference)
+        public void OnBossHit()
         {
-            _audio.PlaySound(bossHitSfx);
             AddToCharge();
+            ScoreModified?.Invoke(200, true);
 
             camHolder.CameraShake(0.1f, 0.1f);
 
@@ -174,8 +167,6 @@ namespace PseudoSummon
 
             hitstopCoroutine = HitStop(0.03f);
             StartCoroutine(hitstopCoroutine);
-
-            GameManager.Instance.AddScore(200, true);
         }
 
         private void OnCurrentHealthModified(int difference)
@@ -443,9 +434,10 @@ namespace PseudoSummon
 
         private void SpawnBullet(Vector3 origin, Vector3 direction)
         {
-            TestBullet newBullet = Instantiate(bulletPrefab, origin, Quaternion.identity).GetComponent<TestBullet>();
-            newBullet.SetTargetLayer(_stats.AttackCollisionMask);
-            newBullet.SetDirection(direction);
+            PrimaryAttackProjectile newProjectile = Instantiate(_primaryAttack, origin, Quaternion.identity);
+            newProjectile.SetPlayerController(this);
+            newProjectile.SetDirection(direction);
+            newProjectile.CollisionMask = _stats.AttackCollisionMask;
         }
 
         private void AnimatePrimaryFire()
@@ -477,15 +469,7 @@ namespace PseudoSummon
 
         protected IEnumerator Buster()
         {
-            // Update state
-            _isBusterInProgress = true;
-            _canStillRollOutOfBuster = true;
-            speedModifier = 0.5f;
-
-            // Start charge effects
-            busterChargeVFX.SetActive(true);
-            animator.Play("BusterCharge");
-            _audio.PlaySound(playerSecondaryChargeSfx);
+            BusterAttackChargeUp();
 
             yield return new WaitForSeconds(2.5f);
 
@@ -493,7 +477,7 @@ namespace PseudoSummon
             _canStillRollOutOfBuster = false;
 
             // Create buster projectile
-            GameObject busterEffect = Instantiate(busterFireVFX, transform);
+            GameObject busterEffect = Instantiate(busterFireVFX, transform); // why use transform to parent this ...
             PlayerBusterAttack newBuster = Instantiate(busterPrefab, transform).GetComponent<PlayerBusterAttack>();
             newBuster.SetTargetLayer(_stats.AttackCollisionMask);
 
@@ -506,7 +490,7 @@ namespace PseudoSummon
             // This is necessary to allow the collider a chance to register the hit
             yield return new WaitForSecondsRealtime(0.05f);
 
-            busterEffect.transform.parent = null;
+            busterEffect.transform.parent = null; // ... when it gets unparented here? just set origin and rotation originally. Its only locally referenced here to unparent it. Could this be part of the attack script?
             newBuster.transform.parent = null;
 
             // Big hitstop and hit registration
@@ -533,6 +517,19 @@ namespace PseudoSummon
             _canStillRollOutOfBuster = true;
             shootCoroutine = null;
             speedModifier = 1f;
+        }
+
+        private void BusterAttackChargeUp()
+        {
+            // Update state
+            _isBusterInProgress = true;
+            _canStillRollOutOfBuster = true;
+            speedModifier = 0.5f;
+
+            // Start charge effects
+            busterChargeVFX.SetActive(true);
+            animator.Play("BusterCharge");
+            _audio.PlaySound(playerSecondaryChargeSfx);
         }
 
         protected IEnumerator CooldownBuster()

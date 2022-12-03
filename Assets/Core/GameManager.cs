@@ -39,6 +39,7 @@ namespace PseudoSummon
         {
             _playerController.PlayerDied += OnPlayerDied;
             _playerController.PausePressed += OnPausePressed;
+            _playerController.ScoreModified += OnScoreModified;
             _bossController.BossDied += OnBossDied;
             UI_TutorialOnFirstPlay.Instance.TutorialEnded += OnTutorialEnded;
         }
@@ -47,6 +48,7 @@ namespace PseudoSummon
         {
             _playerController.PlayerDied -= OnPlayerDied;
             _playerController.PausePressed -= OnPausePressed;
+            _playerController.ScoreModified -= OnScoreModified;
             _bossController.BossDied -= OnBossDied;
             UI_TutorialOnFirstPlay.Instance.TutorialEnded -= OnTutorialEnded;
         }
@@ -127,6 +129,12 @@ namespace PseudoSummon
             {
                 Pause();
             }
+        }
+
+        private void OnScoreModified(int value, bool multiply)
+        {
+            Debug.Log("score modified");
+            _scoreTracker.AddScore(value, multiply);
         }
     }
 }

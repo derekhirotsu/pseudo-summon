@@ -258,6 +258,7 @@ GameObject:
   - component: {fileID: 5607425763507169838}
   - component: {fileID: 5607425763507169839}
   - component: {fileID: 5607425763507169833}
+  - component: {fileID: 3093695559675983757}
   - component: {fileID: 4932645614544962560}
   - component: {fileID: 5607425763507169837}
   - component: {fileID: 951325374121236488}
@@ -310,6 +311,22 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+--- !u!54 &3093695559675983757
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5607425763507169834}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!114 &4932645614544962560
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -336,32 +353,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f53e0e11e77e784cbfef74fa67e13e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _bossHealth: {fileID: 0}
   camHolder: {fileID: 0}
   _stats: {fileID: 11400000, guid: 5d4a5d8b9a1131847a0618baf0e28128, type: 2}
-  baseMoveSpeed: 8
-  playerRollSpeed: 22
-  playerRollTime: 0.15
-  rollIFrameDuration: 0.4
-  dashParticle: {fileID: 7477765099212387787, guid: 0773a2f72e4c6d14e86ad059be509a2a, type: 3}
   _playerModel: {fileID: 905505463223941419}
-  bulletPrefab: {fileID: 2063947483988415485, guid: 109b112fa000a2e40b13b81e86e53031, type: 3}
-  targetLayer:
-    serializedVersion: 2
-    m_Bits: 256
-  firingInterval: 0.21
+  dashParticle: {fileID: 7477765099212387787, guid: 0773a2f72e4c6d14e86ad059be509a2a, type: 3}
+  _primaryAttack: {fileID: 1905764238064883358, guid: 69978f273095f1e4fb31ce9802f41a6f, type: 3}
   busterPrefab: {fileID: 1575137597709655499, guid: 7c350947f3235b342832e1f0b3290abe, type: 3}
   busterChargeVFX: {fileID: 2102354845}
   busterFireVFX: {fileID: 3875565099562772278, guid: b49d1e8659c3ebe468481848c7d8bc03, type: 3}
-  hitsToCharge: 35
-  windDownTime: 2.5
   playerHitSfx: {fileID: 11400000, guid: 2b46e1e46c042a344bb6e3f65cf6437b, type: 2}
   playerShootSfx: {fileID: 11400000, guid: bcea55f6b995a6349a6cb57843ebe252, type: 2}
   playerDodgeSfx: {fileID: 11400000, guid: 3956341321d8c8c488ffa90500990918, type: 2}
   playerSecondaryReadySfx: {fileID: 11400000, guid: 7b442bc071763df4ba4fc68ff949bf37, type: 2}
   playerSecondaryChargeSfx: {fileID: 11400000, guid: d4fe3e811887f74468ed4378268a32b2, type: 2}
   playerSecondaryFireSfx: {fileID: 11400000, guid: f24231c600cb6ce498980b1d900cf679, type: 2}
-  bossHitSfx: {fileID: 11400000, guid: b4d59fd8b5e1e974184e186f2df48938, type: 2}
   IsPaused: 0
   CanDie: 1
   InTutorial: 0
