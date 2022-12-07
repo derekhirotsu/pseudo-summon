@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 1053040402557552440}
   - component: {fileID: 5059617775722488878}
   - component: {fileID: -8979095553811918234}
-  - component: {fileID: 6898268831427149521}
+  - component: {fileID: 6543456393220012538}
   m_Layer: 0
-  m_Name: MagicMissile
+  m_Name: MagicMissileProjectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -65,7 +65,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &6898268831427149521
+--- !u!114 &6543456393220012538
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -74,19 +74,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 2063947483988415485}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 852248947b2753d4889fa5c1e0b0eedf, type: 3}
+  m_Script: {fileID: 11500000, guid: 0ff448b1b5b64e846b94725ffd6661a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletSpeed: 10
-  bulletDamage: 1
+  damage: 1
+  speed: 10
   timeToLive: 3
-  wallCollisionLayer:
+  collisionMask:
     serializedVersion: 2
-    m_Bits: 64
-  targetLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  optionalDeathParticle: {fileID: 0}
+    m_Bits: 128
 --- !u!1 &6026780453192953323
 GameObject:
   m_ObjectHideFlags: 0

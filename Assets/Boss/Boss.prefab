@@ -1028,16 +1028,20 @@ MonoBehaviour:
   boss: {fileID: 7371243991920564466}
   animator: {fileID: 7371243991920564468}
   magicMissile: {fileID: 2063947483988415485, guid: 29eecf95bb9232742be0e617c704bad6, type: 3}
+  _magicMissile: {fileID: 6543456393220012538, guid: 651ff2977a3f71b46af70b1ba707b2c9, type: 3}
   vfx_missileWindup: {fileID: 9195935384217632816, guid: 6db6673b0c925f24a963dffe6357ef7f, type: 3}
   vfx_missileCastObject: {fileID: 7371243992249134583}
   chainLightning: {fileID: 2063947483988415485, guid: f98fb02a0c271aa469fe261e774fa3fc, type: 3}
+  _chainLightning: {fileID: 989435318997740180, guid: cd0aeef28ff594a4eabf322158c9f12e, type: 3}
   vfx_lightningWindup: {fileID: 9195935384217632816, guid: d653be58d4ff804469f4a9523c4e46c2, type: 3}
   vfx_lightningCastObject: {fileID: 7371243993050499731}
   lariatBurst: {fileID: 2063947483988415485, guid: 5caac93581b0ed543be682ad23469c78, type: 3}
+  _lariat: {fileID: 6530249230528248861, guid: e91ee46d8384ed94181bcb98f9631e82, type: 3}
   vfx_lariatWindup: {fileID: 9195935384217632816, guid: 878d5c799640834428a746bcaa2a5ea8, type: 3}
   vfx_lariatCast: {fileID: 9195935384217632816, guid: e81a770d373739241827fd81b9bbdd29, type: 3}
   vfx_lariatCastObject: {fileID: 7371243991651642077}
   iceShard: {fileID: 2063947483988415485, guid: e044387e764f77f40b6601ab1604a873, type: 3}
+  _iceWave: {fileID: 991707839611913097, guid: c90c9b7a24b0d25448fe8d6130935876, type: 3}
   vfx_iceShardWindup: {fileID: 9195935384217632816, guid: 219ba9b70c5d38e4d9ddade0f22b0957, type: 3}
   vfx_iceShardCastObject: {fileID: 7371243991830416168}
   vfx_iceShardCast: {fileID: 9195935384217632816, guid: daa4bff8d2f880c46b26417ecfff6e54, type: 3}

@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: -8979095553811918234}
   - component: {fileID: 5059617775722488878}
   m_Layer: 8
-  m_Name: Lariat 1
+  m_Name: LariatProjectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -31,7 +31,7 @@ Transform:
   m_GameObject: {fileID: 2063947483988415485}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1.53088, y: 1.53088, z: 1.53088}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4425992447153879251}
@@ -117,7 +117,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 1
-  speed: 0
+  speed: 10
   timeToLive: 50
   collisionMask:
     serializedVersion: 2
@@ -161,7 +161,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2463434242889716615, guid: bf19c7585697da34ea633ab381dbba20, type: 3}
       propertyPath: m_Name
-      value: SubLariat 1 (1)
+      value: SubLariat 2
       objectReference: {fileID: 0}
     - target: {fileID: 7000052973463247502, guid: bf19c7585697da34ea633ab381dbba20, type: 3}
       propertyPath: m_RootOrder
@@ -285,7 +285,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2463434242889716615, guid: bf19c7585697da34ea633ab381dbba20, type: 3}
       propertyPath: m_Name
-      value: SubLariat 1 (2)
+      value: SubLariat 3
       objectReference: {fileID: 0}
     - target: {fileID: 7000052973463247502, guid: bf19c7585697da34ea633ab381dbba20, type: 3}
       propertyPath: m_RootOrder

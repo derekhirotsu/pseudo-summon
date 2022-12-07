@@ -7441,6 +7441,14 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1250312723}
+    - target: {fileID: 7371243993206142164, guid: 800662da85873c7418b9feef3cee5586, type: 3}
+      propertyPath: _iceWaveProjectile
+      value: 
+      objectReference: {fileID: 991707839611913097, guid: c90c9b7a24b0d25448fe8d6130935876, type: 3}
+    - target: {fileID: 7371243993206142164, guid: 800662da85873c7418b9feef3cee5586, type: 3}
+      propertyPath: _chainLightningProjectile
+      value: 
+      objectReference: {fileID: 989435318997740180, guid: cd0aeef28ff594a4eabf322158c9f12e, type: 3}
     - target: {fileID: 7371243993206142165, guid: 800662da85873c7418b9feef3cee5586, type: 3}
       propertyPath: m_Name
       value: Boss
