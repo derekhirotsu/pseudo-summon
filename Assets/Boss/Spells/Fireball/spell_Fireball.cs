@@ -101,7 +101,7 @@ public class spell_Fireball : MonoBehaviour
         FireballProjectile fireball = go.GetComponent<FireballProjectile>();
 
         fireball.SetDirection(direction);
-        fireball.SetSpeed(projectileSpeed);
+        fireball.Speed = projectileSpeed;
     }
 
     // pattern 0
