@@ -16,26 +16,22 @@ namespace PseudoSummon
         public Health Health { get { return _health; } }
 
         [Header("Missile Attacks")]
-        [SerializeField] private GameObject magicMissile;
         [SerializeField] private Projectile _magicMissile;
         [SerializeField] private GameObject vfx_missileWindup;
         [SerializeField] private GameObject vfx_missileCastObject;
 
         [Header("Lightning Attacks")]
-        [SerializeField] private GameObject chainLightning;
         [SerializeField] private Projectile _chainLightning;
         [SerializeField] private GameObject vfx_lightningWindup;
         [SerializeField] private GameObject vfx_lightningCastObject;
 
         [Header("Purple Attacks")]
-        [SerializeField] private GameObject lariatBurst;
         [SerializeField] private Projectile _lariat;
         [SerializeField] private GameObject vfx_lariatWindup;
         [SerializeField] private GameObject vfx_lariatCast;
         [SerializeField] private GameObject vfx_lariatCastObject;
 
         [Header("Ice Attacks")]
-        [SerializeField] private GameObject iceShard;
         [SerializeField] private Projectile _iceWave;
         [SerializeField] private GameObject vfx_iceShardWindup;
         [SerializeField] private GameObject vfx_iceShardCastObject;
@@ -219,7 +215,7 @@ namespace PseudoSummon
 
                 int result = Random.Range(0, 4);
 
-                switch (0)
+                switch (result)
                 {
                     case 0:
                         _audio.PlaySound(autoAttackChargeSfx);
@@ -264,23 +260,6 @@ namespace PseudoSummon
             animator.SetBool(name, false);
         }
 
-        //private void Fire(GameObject projectile, Vector3 positionOffset, Vector3 rotationOffset, float deviation = 0)
-        //{
-        //    Vector3 aimVector = (player.position - boss.position).normalized;
-        //    aimVector.y = 0;
-        //    Vector3 spawnLocation = boss.position + positionOffset + aimVector * 1;
-
-        //    TestBullet newBullet = Instantiate(projectile, spawnLocation, Quaternion.identity).GetComponent<TestBullet>();
-        //    newBullet.SetTargetLayer(bossTargets);
-
-        //    // Random deviation
-        //    aimVector.x += Random.Range(-deviation, deviation);
-        //    aimVector.z += Random.Range(-deviation, deviation);
-        //    aimVector = aimVector.normalized;
-
-        //    newBullet.SetDirection(aimVector);
-        //}
-
         private void FireProjectile(Projectile projectile, Vector3 originOffset, float degreeDeviation = 0)
         {
             Vector3 aimVector = (player.position - boss.position).normalized;
@@ -304,7 +283,6 @@ namespace PseudoSummon
                 Instantiate(vfx_iceShardCast, autoWindupOrb.transform);
                 for (int j = 0; j < 40; j += 1)
                 {
-                    //Fire(iceShard, Vector3.zero, Vector3.zero, 0.8f);
                     FireProjectile(_iceWave, Vector3.zero, 60f);
                 }
                 yield return volleyInterval;
@@ -319,7 +297,6 @@ namespace PseudoSummon
             vfx_missileCastObject.SetActive(true);
             for (int i = 0; i < 60; i++)
             {
-                //Fire(magicMissile, Vector3.zero, Vector3.zero, 0.8f);
                 FireProjectile(_magicMissile, Vector3.zero, 60f);
                 _audio.PlaySound(missileBarrageFireSfx);
                 yield return barrageInterval;
@@ -335,7 +312,6 @@ namespace PseudoSummon
             for (int i = 0; i < 5; i++)
             {
                 Instantiate(vfx_lariatCast, autoWindupOrb.transform);
-                //Fire(lariatBurst, Vector3.zero, Vector3.zero);
                 FireProjectile(_lariat, Vector3.zero);
                 _audio.PlaySound(lariatFireSfx);
                 yield return lariatInterval;
@@ -352,7 +328,6 @@ namespace PseudoSummon
             for (int i = 0; i < 200; i++)
             {
                 FireProjectile(_chainLightning, offset);
-                //Fire(chainLightning, offset, Vector3.zero);
                 _audio.PlaySound(lightningFireSfx);
                 yield return lightningInterval;
             }
