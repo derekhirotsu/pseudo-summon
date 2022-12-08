@@ -21,6 +21,8 @@ namespace PseudoSummon
         private PlayerController _playerController;
         private BossController _bossController;
 
+        #region UnityFunctions
+
         private void Awake()
         {
             _playerController = _player.GetComponent<PlayerController>();
@@ -34,6 +36,24 @@ namespace PseudoSummon
             {
                 Destroy(gameObject);
             }
+        }
+
+        private void Start()
+        {
+            _playerHud.SetPlayer(_player);
+            _bossHealthDisplay.SetBossNameDisplayText(_bossName);
+
+            if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
+            {
+                UI_TutorialOnFirstPlay.Instance.StartTutorialSequence();
+                _playerController.InTutorial = true;
+            }
+        }
+
+        private void Update()
+        {
+            _scoreDisplay.SetScoreText(_scoreTracker.Score);
+            _bossHealthDisplay.SetHealthPercent(_bossController.Health.CurrentHealthPercent);
         }
 
         private void OnEnable()
@@ -54,6 +74,8 @@ namespace PseudoSummon
             UI_TutorialOnFirstPlay.Instance.TutorialEnded -= OnTutorialEnded;
         }
 
+        #endregion
+
         public void AddScore(int amount, bool increaseMultiplier = false)
         {
             _scoreTracker.AddScore(amount, increaseMultiplier);
@@ -62,24 +84,6 @@ namespace PseudoSummon
         public int GetScore()
         {
             return _scoreTracker.Score;
-        }
-
-        private void Start()
-        {
-            _playerHud.SetPlayer(_player);
-            _bossHealthDisplay.SetBossNameDisplayText(_bossName); 
-
-            if (UI_TutorialOnFirstPlay.Instance.FirstPlay)
-            {
-                UI_TutorialOnFirstPlay.Instance.StartTutorialSequence();
-                _playerController.InTutorial = true;
-            } 
-        }
-
-        private void Update()
-        {
-            _scoreDisplay.SetScoreText(_scoreTracker.Score);
-            _bossHealthDisplay.SetHealthPercent(_bossController.Health.CurrentHealthPercent);
         }
 
         public void Pause()
