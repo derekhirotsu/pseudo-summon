@@ -15,27 +15,38 @@ namespace PseudoSummon
         private Health _health;
         public Health Health { get { return _health; } }
 
-        [Header("Missile Attacks")]
+        [Header("Magic Missile Barrage Attack")]
         [SerializeField] private Projectile _magicMissile;
         [SerializeField] private GameObject vfx_missileWindup;
         [SerializeField] private GameObject vfx_missileCastObject;
+        [SerializeField, Min(1)] private int _numberOfMissilesPerAttack = 60;
+        [SerializeField, Min(0)] private float _magicMissileDegreeDeviation = 60f;
+        [SerializeField, Min(0)] private float _secondsBetweenMissiles = 0.08f;
 
-        [Header("Lightning Attacks")]
+        [Header("Chain Lightning Attack")]
         [SerializeField] private Projectile _chainLightning;
         [SerializeField] private GameObject vfx_lightningWindup;
         [SerializeField] private GameObject vfx_lightningCastObject;
+        [SerializeField, Min(1)] private int _chainLightningProjectilesPerAttack = 200;
+        [SerializeField, Min(0)] private float _secondsBetweenChainLightning = 0.05f;
 
-        [Header("Purple Attacks")]
+        [Header("Lariat Attack")]
         [SerializeField] private Projectile _lariat;
         [SerializeField] private GameObject vfx_lariatWindup;
         [SerializeField] private GameObject vfx_lariatCast;
         [SerializeField] private GameObject vfx_lariatCastObject;
+        [SerializeField, Min(0)] private float _secondsBetweenLariats = 1f;
+        [SerializeField, Min(1)] private int _numberOfLariatsPerAttack = 5;
 
-        [Header("Ice Attacks")]
+        [Header("Ice Wave Volley Attack")]
         [SerializeField] private Projectile _iceWave;
         [SerializeField] private GameObject vfx_iceShardWindup;
         [SerializeField] private GameObject vfx_iceShardCastObject;
         [SerializeField] private GameObject vfx_iceShardCast;
+        [SerializeField, Min(1)] private int _numberOfIceWaveVolleys = 4;
+        [SerializeField, Min(1)] private int _iceShardsPerVolley = 40;
+        [SerializeField, Min(0)] private float _iceWaveDegreeDeviation = 60f;
+        [SerializeField, Min(0)] private float _secondsBetweenIceWaveVolleys = 1f;
 
         [Header("Cast Sequences")]
         [SerializeField] private List<SpellSequence> castSequences;
@@ -46,11 +57,23 @@ namespace PseudoSummon
 
         [Header("Config Fields")]
         [SerializeField] LayerMask bossTargets;
-
         [SerializeField] private float minRotationSpeed;
         [SerializeField] private float maxRotationSpeed;
         [SerializeField] private float firingInterval;
         [SerializeField] private bool canFire = true;
+        [SerializeField, Min(0)] private float _minAutoPhaseTimeSeconds = 12f;
+        [SerializeField, Min(0)] private float _maxAutoPhaseTimeSeconds = 15f;
+        [SerializeField, Min(0)] private float _minCastingPhaseTimeSeconds = 17f;
+        [SerializeField, Min(0)] private float _maxCastingPhaseTimeSeconds = 20f;
+        [SerializeField, Min(0)] private float _minDirectionChangeTimeSeconds = 1f;
+        [SerializeField, Min(0)] private float _maxDirectionChangeTimeSeconds = 3f;
+
+        [Header("Boss Audio")]
+        [SerializeField] private SoundFile autoAttackChargeSfx;
+        [SerializeField] private SoundFile iceWaveFireSfx;
+        [SerializeField] private SoundFile missileBarrageFireSfx;
+        [SerializeField] private SoundFile lariatFireSfx;
+        [SerializeField] private SoundFile lightningFireSfx;
 
         private float rotationSpeed;
         protected bool autoPhase = false;
@@ -59,14 +82,12 @@ namespace PseudoSummon
         private float currentPhaseTime = 10;
 
         private SpellController spellController;
-
-        [Header("Boss Audio")]
-        [SerializeField] private SoundFile autoAttackChargeSfx;
-        [SerializeField] private SoundFile iceWaveFireSfx;
-        [SerializeField] private SoundFile missileBarrageFireSfx;
-        [SerializeField] private SoundFile lariatFireSfx;
-        [SerializeField] private SoundFile lightningFireSfx;
         private AudioProvider _audio;
+
+        private WaitForSeconds _magicMissileBarrageInterval;
+        private WaitForSeconds _lightningInterval;
+        private WaitForSeconds _lariatInterval;
+        private WaitForSeconds _iceWaveVolleyInterval;
 
         public System.Action BossDied;
 
@@ -91,6 +112,10 @@ namespace PseudoSummon
 
         private void Start()
         {
+            _magicMissileBarrageInterval = new WaitForSeconds(_secondsBetweenMissiles);
+            _lightningInterval = new WaitForSeconds(_secondsBetweenChainLightning);
+            _lariatInterval = new WaitForSeconds(_secondsBetweenLariats);
+            _iceWaveVolleyInterval = new WaitForSeconds(_secondsBetweenIceWaveVolleys);
             rotationSpeed = minRotationSpeed;
             StartCoroutine(ShortDelayBeforeEncounter());
         }
@@ -105,15 +130,8 @@ namespace PseudoSummon
 
             if (autoPhase)
             {
-                float diff = Time.deltaTime * rotationSpeed;
-                if (clockwise)
-                {
-                    yRotation = (yRotation + diff) % 360;
-                }
-                else
-                {
-                    yRotation = (yRotation - diff) % 360;
-                }
+                float diff = clockwise ? Time.deltaTime * rotationSpeed : -(Time.deltaTime * rotationSpeed);
+                yRotation = (yRotation + diff) % 360;
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(0, yRotation, 0), 0.03f);
             }
             else
@@ -141,7 +159,7 @@ namespace PseudoSummon
 
         public void EnterAutoPhase()
         {
-            currentPhaseTime = 10f + Random.Range(2f, 5f);
+            currentPhaseTime = Random.Range(_minAutoPhaseTimeSeconds, _maxAutoPhaseTimeSeconds);
             autoPhase = true;
 
             StopAllCoroutines();
@@ -162,7 +180,7 @@ namespace PseudoSummon
             vfx_iceShardCastObject.SetActive(false);
             vfx_lariatCastObject.SetActive(false);
 
-            currentPhaseTime = 15f + Random.Range(2f, 5f);
+            currentPhaseTime = Random.Range(_minCastingPhaseTimeSeconds, _maxCastingPhaseTimeSeconds);
             autoPhase = false;
 
             StopAllCoroutines();
@@ -185,14 +203,15 @@ namespace PseudoSummon
 
         private IEnumerator RandomizeRotationSpeed()
         {
+            WaitForSeconds speedChangeWait = new WaitForSeconds(4f);
+
             while (true)
             {
-                float test = Random.Range(minRotationSpeed, maxRotationSpeed);
-                float test0 = Mathf.Floor(test);
+                float nextRotationSpeed = Mathf.Floor(Random.Range(minRotationSpeed, maxRotationSpeed));
 
-                rotationSpeed = test0;
+                rotationSpeed = nextRotationSpeed;
 
-                yield return new WaitForSeconds(4f);
+                yield return speedChangeWait;
             }
         }
 
@@ -200,17 +219,19 @@ namespace PseudoSummon
         {
             while (true)
             {
-                clockwise = Random.Range(0f, 1f) < 0.5f;
+                clockwise = Random.value < 0.5f;
+                float waitTime = Random.Range(_minDirectionChangeTimeSeconds, _maxDirectionChangeTimeSeconds);
 
-                yield return new WaitForSeconds(Random.Range(1f, 3f));
+                yield return new WaitForSeconds(waitTime);
             }
         }
 
         private IEnumerator FiringCoroutine()
         {
+            WaitForSeconds windupDelay = new WaitForSeconds(0.5f);
+
             while (canFire)
             {
-
                 animator.Play("AutoWindup");
 
                 int result = Random.Range(0, 4);
@@ -220,28 +241,28 @@ namespace PseudoSummon
                     case 0:
                         _audio.PlaySound(autoAttackChargeSfx);
                         Instantiate(vfx_missileWindup, autoWindupOrb.transform);
-                        yield return new WaitForSeconds(0.5f);
+                        yield return windupDelay;
                         yield return StartCoroutine(MissileBarrage());
                         break;
 
                     case 1:
                         _audio.PlaySound(autoAttackChargeSfx);
                         Instantiate(vfx_lightningWindup, autoWindupOrb.transform);
-                        yield return new WaitForSeconds(0.5f);
+                        yield return windupDelay;
                         yield return StartCoroutine(ChainLightning());
                         break;
 
                     case 2:
                         _audio.PlaySound(autoAttackChargeSfx);
                         Instantiate(vfx_lariatWindup, autoWindupOrb.transform);
-                        yield return new WaitForSeconds(0.5f);
+                        yield return windupDelay;
                         yield return StartCoroutine(LariatBurst());
                         break;
 
                     case 3:
                         _audio.PlaySound(autoAttackChargeSfx);
                         Instantiate(vfx_iceShardWindup, autoWindupOrb.transform);
-                        yield return new WaitForSeconds(0.5f);
+                        yield return windupDelay;
                         yield return StartCoroutine(IceWaveVolley());
                         break;
                 }
@@ -260,76 +281,67 @@ namespace PseudoSummon
             animator.SetBool(name, false);
         }
 
-        private void FireProjectile(Projectile projectile, Vector3 originOffset, float degreeDeviation = 0)
+        private void FireProjectile(Projectile projectile, float degreeDeviation = 0)
         {
             Vector3 aimVector = (player.position - boss.position).normalized;
             aimVector.y = 0;
-            Vector3 spawnLocation = boss.position + originOffset + aimVector * 1;
+            Vector3 spawnLocation = boss.position + aimVector * 1;
 
             aimVector = Quaternion.Euler(0, Random.Range(-degreeDeviation, degreeDeviation), 0) * aimVector;
 
             Projectile newProjectile = Instantiate(projectile, spawnLocation, Quaternion.identity).GetComponent<Projectile>();
             newProjectile.SetDirection(aimVector);
-        } 
+        }
 
         private IEnumerator IceWaveVolley()
         {
-            WaitForSeconds volleyInterval = new WaitForSeconds(1f);
-
             vfx_iceShardCastObject.SetActive(true);
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < _numberOfIceWaveVolleys; i++)
             {
                 _audio.PlaySound(iceWaveFireSfx);
                 Instantiate(vfx_iceShardCast, autoWindupOrb.transform);
-                for (int j = 0; j < 40; j += 1)
+                for (int j = 0; j < _iceShardsPerVolley; j++)
                 {
-                    FireProjectile(_iceWave, Vector3.zero, 60f);
+                    FireProjectile(_iceWave, _iceWaveDegreeDeviation);
                 }
-                yield return volleyInterval;
+                yield return _iceWaveVolleyInterval;
             }
             vfx_iceShardCastObject.SetActive(false);
         }
-
+        
         private IEnumerator MissileBarrage()
         {
-            WaitForSeconds barrageInterval = new WaitForSeconds(0.08f);
-
             vfx_missileCastObject.SetActive(true);
-            for (int i = 0; i < 60; i++)
+            for (int i = 0; i < _numberOfMissilesPerAttack; i++)
             {
-                FireProjectile(_magicMissile, Vector3.zero, 60f);
+                FireProjectile(_magicMissile, _magicMissileDegreeDeviation);
                 _audio.PlaySound(missileBarrageFireSfx);
-                yield return barrageInterval;
+                yield return _magicMissileBarrageInterval;
             }
             vfx_missileCastObject.SetActive(false);
         }
 
         private IEnumerator LariatBurst()
         {
-            WaitForSeconds lariatInterval = new WaitForSeconds(1f);
-
             vfx_lariatCastObject.SetActive(true);
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < _numberOfLariatsPerAttack; i++)
             {
                 Instantiate(vfx_lariatCast, autoWindupOrb.transform);
-                FireProjectile(_lariat, Vector3.zero);
+                FireProjectile(_lariat);
                 _audio.PlaySound(lariatFireSfx);
-                yield return lariatInterval;
+                yield return _lariatInterval;
             }
             vfx_lariatCastObject.SetActive(false);
         }
 
         private IEnumerator ChainLightning()
         {
-            WaitForSeconds lightningInterval = new WaitForSeconds(0.05f);
-            Vector3 offset = new Vector3(3, 1, 0);
-
             vfx_lightningCastObject.SetActive(true);
-            for (int i = 0; i < 200; i++)
+            for (int i = 0; i < _chainLightningProjectilesPerAttack; i++)
             {
-                FireProjectile(_chainLightning, offset);
+                FireProjectile(_chainLightning);
                 _audio.PlaySound(lightningFireSfx);
-                yield return lightningInterval;
+                yield return _lightningInterval;
             }
             vfx_lightningCastObject.SetActive(false);
         }
